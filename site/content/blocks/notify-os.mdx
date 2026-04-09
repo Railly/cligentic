@@ -1,20 +1,3 @@
-<TerminalDemo
-  title="notify-os demo"
-  steps={[
-    {
-      command: "myapp build --notify",
-      output: [
-        { text: "  Compiling...", type: "muted" },
-        { text: "  Bundling assets...", type: "muted" },
-        { text: "  Build complete. 12.4s", type: "output" },
-        { text: "", type: "empty" },
-        { text: "  [macOS notification sent]", type: "accent" },
-        { text: '  "Build complete: myapp v1.2.0 is ready."', type: "accent" },
-      ],
-    },
-  ]}
-/>
-
 ## The problem
 
 Long-running CLI operations complete while the user's focus is elsewhere.

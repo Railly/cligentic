@@ -7,6 +7,8 @@ import { BlockSource } from "../../components/block-source";
 import { CopyCommand } from "../../components/copy-command";
 import { Footer } from "../../components/footer";
 import { Header } from "../../components/header";
+import { TerminalDemo } from "../../components/terminal-demo";
+import { blockDemos } from "../../lib/block-demos";
 import { getInstallCommand, registry } from "../../lib/registry";
 
 type Props = {
@@ -89,6 +91,7 @@ export default async function BlockDetailPage({ params }: Props) {
   const hasChain = (item.registryDependencies?.length ?? 0) > 0;
 
   const Content = await loadBlockContent(name);
+  const demo = blockDemos[name];
   const sourcePath = item.files[0]?.path ?? "";
   const source = sourcePath ? loadBlockSource(sourcePath) : "";
   const sourceLines = source.split("\n").length;
@@ -117,6 +120,13 @@ export default async function BlockDetailPage({ params }: Props) {
         <p className="mb-10 max-w-2xl text-base leading-relaxed text-[color:var(--color-fg-muted)]">
           {item.description}
         </p>
+
+        {/* Animated terminal demo */}
+        {demo && (
+          <div className="mb-12">
+            <TerminalDemo steps={demo.steps} title={demo.title} />
+          </div>
+        )}
 
         {/* Install command */}
         <div className="mb-14 max-w-full">

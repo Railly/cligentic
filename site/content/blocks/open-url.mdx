@@ -1,30 +1,3 @@
-<TerminalDemo
-  title="open-url demo"
-  steps={[
-    {
-      command: "myapp login",
-      output: [
-        { text: "  Opening browser for authentication...", type: "output" },
-        { text: "  Opened: https://auth.example.com/login?redirect=...", type: "accent" },
-        { text: "  Waiting for callback...", type: "muted" },
-        { text: "  Authenticated as hunter@railly.dev", type: "accent" },
-      ],
-    },
-    {
-      command: "myapp login  (over SSH, no browser)",
-      output: [
-        { text: "  No browser available (headless).", type: "muted" },
-        { text: "", type: "empty" },
-        { text: "  Open this URL in your browser to sign in:", type: "output" },
-        { text: "  https://auth.example.com/login?redirect=...", type: "accent" },
-        { text: "", type: "empty" },
-        { text: "  Waiting for callback...", type: "muted" },
-        { text: "  Authenticated as hunter@railly.dev", type: "accent" },
-      ],
-    },
-  ]}
-/>
-
 ## The problem
 
 Every CLI that does OAuth, opens docs, or launches a local server eventually

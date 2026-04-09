@@ -1,32 +1,3 @@
-<TerminalDemo
-  title="killswitch demo"
-  steps={[
-    {
-      command: "myapp order buy AAPL --qty 10",
-      output: [
-        { text: "  Placing order for 10x AAPL...", type: "output" },
-        { text: "  Order placed. ID: ord_abc123", type: "accent" },
-      ],
-    },
-    {
-      command: "myapp killswitch on --reason 'suspicious activity'",
-      output: [
-        { text: "  Killswitch activated.", type: "accent" },
-        { text: "  All write operations are now blocked.", type: "output" },
-      ],
-    },
-    {
-      command: "myapp order buy MSFT --qty 5",
-      output: [
-        { text: "  Error: Killswitch is ON since 2026-04-09T12:00:00Z", type: "accent" },
-        { text: "  Reason: suspicious activity", type: "output" },
-        { text: "  All write operations are blocked.", type: "muted" },
-        { text: "  Remove ~/.myapp/KILLSWITCH to resume.", type: "muted" },
-      ],
-    },
-  ]}
-/>
-
 ## The problem
 
 An agent running your CLI starts doing something wrong. Maybe the market

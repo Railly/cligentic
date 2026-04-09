@@ -1,27 +1,3 @@
-<TerminalDemo
-  title="next-steps demo"
-  steps={[
-    {
-      command: "myapp deploy --json",
-      output: [
-        { text: '  {"version":"1.2.0","status":"deployed","url":"https://myapp.com"}', type: "output" },
-        { text: "", type: "empty" },
-        { text: '  {"type":"next-step","command":"myapp status","description":"check health"}', type: "accent" },
-        { text: '  {"type":"next-step","command":"myapp logs -f","description":"tail logs"}', type: "accent" },
-        { text: '  {"type":"next-step","command":"myapp rollback","description":"revert","optional":true}', type: "muted" },
-      ],
-    },
-    {
-      command: "myapp status",
-      output: [
-        { text: "  v1.2.0 running on 3/3 instances", type: "output" },
-        { text: "  Uptime: 2m 34s", type: "output" },
-        { text: "  Health: all green", type: "accent" },
-      ],
-    },
-  ]}
-/>
-
 ## The problem
 
 Agents operating CLIs have two jobs: read the output, decide the next

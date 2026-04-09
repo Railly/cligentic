@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+@theme {
+  /* Pitch-black dev-tool palette with burnt-orange accent */
+  --color-bg: #000000;
+  --color-bg-elevated: #0a0a0a;
+  --color-bg-border: #1a1a1a;
+  --color-bg-hover: #141414;
+
+  --color-accent: #ff6b1a;
+  --color-accent-dim: #cc5515;
+  --color-accent-glow: rgba(255, 107, 26, 0.15);
+
+  --color-fg: #ffffff;
+  --color-fg-muted: #8a8a8a;
+  --color-fg-dim: #4a4a4a;
+
+  /* Typography — Inter for everything, JetBrains Mono for code */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, "Menlo", monospace;
+
+  --text-hero: 108px;
+  --text-hero-line-height: 1.02;
+  --text-hero-tracking: -0.035em;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  /* Respect the user's motion preference — killswitch for smooth scroll */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Section anchors need margin-top so scrolled-to content clears the
+     hairline frame + visual breathing room. */
+  section[id] {
+    scroll-margin-top: 80px;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  /* Hairline viewport frame — the Swiss move from ui.sh */
+  .viewport-frame::before,
+  .viewport-frame::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-bg-border);
+    pointer-events: none;
+    z-index: 50;
+  }
+  .viewport-frame::before {
+    top: 40px;
+  }
+  .viewport-frame::after {
+    bottom: 40px;
+  }
+
+  /* Hero display type — tight tracking, tight leading */
+  .hero-display {
+    font-size: clamp(48px, 10vw, 128px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+
+  /* Mono code block — always dim by default, bright on hover */
+  .cmd {
+    font-family: var(--font-mono);
+    font-feature-settings: "zero", "ss01";
+    font-variant-ligatures: none;
+  }
+}
+
+@layer components {
+  /**
+   * MDX article — the container for block docs rendered from .mdx files.
+   * Children (headings, p, ul, code, etc) are styled by mdx-components.tsx.
+   * This class only controls overall width and first-child spacing reset.
+   */
+  .mdx-article {
+    max-width: 72ch;
+  }
+
+  .mdx-article > *:first-child {
+    margin-top: 0;
+  }
+
+  /* placeholder: rehype-pretty-code styles moved outside @layer below */
+
+  /**
+   * BlockSource — the full-source section at the end of each block detail
+   * page. Uses shiki's codeToHtml directly (not rehype), so the markup is
+   * different: <pre class="shiki"> with <code> and <span class="line">
+   * children. No figure wrapper.
+   */
+  .block-source-body {
+    overflow-x: auto;
+  }
+
+  .block-source-body pre {
+    background: transparent !important;
+    margin: 0;
+    padding: 1.5rem 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    border: 0;
+    border-radius: 0;
+    white-space: pre;
+  }
+
+  .block-source-body code {
+    background: transparent;
+    padding: 0;
+    border: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, var(--color-bg-border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-bg-border) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  .accent-thread::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at var(--x, 0%) var(--y, 0%),
+      var(--color-accent-glow) 0%,
+      transparent 40%
+    );
+    pointer-events: none;
+  }
+
+  /* Button with black arrow box — the ui.sh two-tone move */
+  .btn-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 10px;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .btn-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -8px var(--color-accent-glow);
+  }
+
+  .btn-accent .btn-label {
+    padding: 14px 18px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: -0.01em;
+  }
+
+  .btn-accent .btn-arrow {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    padding: 14px 14px;
+    display: grid;
+    place-items: center;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-fg-muted);
+    font-size: 13px;
+    padding: 10px 0;
+    transition: color 150ms ease;
+  }
+
+  .btn-ghost:hover {
+    color: var(--color-fg);
+  }
+}
+
+/**
+ * rehype-pretty-code overrides.
+ *
+ * OUTSIDE of @layer so they beat everything in the Tailwind v4 cascade.
+ * Shiki injects inline styles on <pre> and <code> that have the highest
+ * specificity possible (style attr). We counter with !important on every
+ * property we need to control.
+ *
+ * Structure:
+ *   <figure data-rehype-pretty-code-figure>
+ *     <pre style="background-color:...">
+ *       <code style="display:grid" data-language="ts" data-theme="...">
+ *         <span data-line>…tokens…</span>
+ *       </code>
+ *     </pre>
+ *   </figure>
+ */
+figure[data-rehype-pretty-code-figure] {
+  margin: 1.75rem 0;
+  border: 1px solid var(--color-bg-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+figure[data-rehype-pretty-code-figure] pre {
+  overflow-x: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 1.25rem 1.5rem !important;
+  margin: 0 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+figure[data-rehype-pretty-code-figure] code {
+  background: transparent !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+}
+
+figure[data-rehype-pretty-code-figure] [data-line] {
+  display: block;
+}

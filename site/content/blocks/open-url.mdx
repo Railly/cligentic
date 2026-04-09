@@ -1,0 +1,125 @@
+## The problem
+
+Every CLI that does OAuth, opens docs, or launches a local server eventually
+needs to open a URL in the user's browser. Every CLI writes this badly.
+
+```ts
+// What everyone writes the first time:
+const cmd =
+  process.platform === "darwin"
+    ? "open"
+    : process.platform === "win32"
+      ? "start"
+      : "xdg-open";
+spawn(cmd, [url]);
+```
+
+This fails in at least five ways you won't notice until users report bugs:
+
+- **WSL** - `xdg-open` doesn't exist; you need `wslview` or `cmd.exe`
+- **SSH sessions** - no DISPLAY, `xdg-open` hangs or errors silently
+- **Headless CI** - no browser at all, but your command still "succeeds"
+- **`BROWSER` env var** - the Unix convention to override the default is ignored
+- **Spaces or `&` in URLs** - unquoted on Windows, your shell eats them
+
+The `open-url` block handles all five. It returns a typed verdict instead of
+throwing, so you decide what to do when opening fails.
+
+## Quickstart
+
+```ts
+import { openUrl } from "@/cli/platform/open-url";
+
+const result = await openUrl("https://cligentic.railly.dev");
+
+if (!result.opened) {
+  console.log("Open this URL manually:", result.url);
+}
+```
+
+That's it. No try/catch, no platform detection in your code, no fallback chain.
+
+## Usage in an OAuth flow
+
+The canonical scenario: your CLI starts a local callback server, opens the
+auth page in the user's browser, waits for the redirect.
+
+```ts
+import { openUrl } from "@/cli/platform/open-url";
+import { startCallbackServer } from "./auth/callback";
+
+export async function login() {
+  const { port, promise } = await startCallbackServer();
+  const authUrl = `https://auth.example.com?redirect=http://localhost:${port}`;
+
+  const result = await openUrl(authUrl);
+
+  if (!result.opened) {
+    // Headless, SSH, or CI - tell the user what to do
+    console.log("\nOpen this URL in your browser to sign in:\n");
+    console.log(`  ${result.url}\n`);
+  }
+
+  const token = await promise;
+  return token;
+}
+```
+
+The `!result.opened` branch is not a bug fallback. It's the **primary path**
+for CI and SSH. Treat it as a first-class UX, not an edge case.
+
+## The fallback chain
+
+Internally, `openUrl` tries these in order:
+
+1. **`BROWSER` env var** - if set and not `"none"`, spawn whatever the user picked
+2. **Platform-specific opener** - `open` on macOS, `powershell Start-Process` on Windows
+3. **WSL detection** - reads `/proc/version` for "microsoft"; if found, routes through `wslview` → `cmd.exe /c start`
+4. **Linux chain** - `xdg-open` → `gio open` → `sensible-browser` → `firefox` → `google-chrome` → `chromium`
+5. **Headless detection** - no `DISPLAY`, no `WAYLAND_DISPLAY`, or `CI=1` → returns manual verdict
+
+If all opening paths fail, the block returns `{ opened: false, via: "manual", reason }`
+with a human-readable explanation. You log the URL, the user clicks it, life
+moves on.
+
+## Signature
+
+```ts
+export type OpenUrlResult = {
+  url: string;
+  opened: boolean;
+  via: "browser-env" | "darwin" | "wsl" | "linux" | "windows" | "manual";
+  reason?: string;
+};
+
+export type OpenUrlOptions = {
+  /** Never spawn - just return what would happen. For testing. */
+  dryRun?: boolean;
+  /** Force the manual fallback (print-only). */
+  manualOnly?: boolean;
+};
+
+export function openUrl(
+  url: string,
+  options?: OpenUrlOptions,
+): Promise<OpenUrlResult>;
+```
+
+## Never throws, never exits
+
+`openUrl` has one rule: **it returns a verdict, it never crashes your CLI**.
+That means:
+
+- Invalid URLs → spawn fails, returns `{ opened: false, via: "manual" }`
+- Missing binaries → chain continues to the next candidate
+- Headless env → short-circuits to manual before trying anything
+- CI env → treated as headless
+
+Your command handler always gets a typed result. You decide the UX.
+
+## Related
+
+- Pair with [`json-mode`](/blocks/json-mode) so your OAuth command can emit
+  structured success to stdout when `--json` is passed
+- Pair with [`next-steps`](/blocks/next-steps) to hint the next command
+  (e.g. `myapp whoami`) after a successful login

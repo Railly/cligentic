@@ -1,0 +1,133 @@
+## The problem
+
+CLIs that serve both humans and agents need to render the same data two
+different ways. Most CLIs do this badly - either they only support one
+mode (breaks agents), or they mix data and logs on the same stream
+(breaks JSON parsing), or they use `process.exit()` inside output helpers
+(hijacks the caller's control flow).
+
+The `json-mode` block enforces four rules:
+
+1. **stdout is data** - only the answer goes here
+2. **stderr is logs** - notes, progress, errors, hints
+3. **Mode detection is implicit** - piped stdout auto-switches to JSON
+4. **Never `process.exit()`** - the caller decides exit codes
+
+## Quickstart
+
+```ts
+import { emit, note, reportError, detectMode } from "@/cli/agent/json-mode";
+
+program
+  .option("--json", "emit JSON for agents")
+  .command("list")
+  .action(async (opts) => {
+    note("Fetching items...", opts);
+
+    try {
+      const items = await fetchItems();
+      emit(items, opts, (data) => {
+        for (const item of data) console.log(`- ${item.name}`);
+      });
+    } catch (err) {
+      reportError(err, opts);
+      process.exit(1);
+    }
+  });
+```
+
+Running `myapp list` in a terminal prints the bulleted list. Running
+`myapp list --json` or `myapp list | jq .` emits NDJSON to stdout. Running
+in CI auto-detects non-TTY and switches to JSON. Zero extra flags in the
+author's code.
+
+## The four functions
+
+### `detectMode(opts)`
+
+Returns `"human"` or `"json"` based on this precedence:
+
+1. Explicit `--json` flag → always JSON
+2. `NO_JSON=1` env var → force human
+3. `process.stdout.isTTY === false` (piped, redirected) → JSON
+4. Default → human
+
+```ts
+const mode = detectMode({ json: false });
+// → "human" in a terminal, "json" in a pipe, "json" with --json
+```
+
+### `emit(value, opts, humanRender?)`
+
+The dispatcher. In JSON mode, writes `JSON.stringify(value)` to stdout.
+In human mode, calls `humanRender(value)` if provided, otherwise falls
+back to pretty-printed JSON.
+
+```ts
+emit({ count: 3, items: ["a", "b", "c"] }, opts, (data) => {
+  console.log(`Got ${data.count} items:`);
+  for (const item of data.items) console.log(`  • ${item}`);
+});
+```
+
+Arrays emit as **NDJSON** (one JSON object per line) so agents can
+stream-parse large result sets without waiting for the closing bracket.
+
+### `note(message, opts)`
+
+Writes a human-guidance message to **stderr**. In JSON mode, notes are
+suppressed entirely to keep stderr clean for `next-steps` output.
+
+```ts
+note("Fetching from API...", opts);
+note("Using profile: production", opts);
+```
+
+Use notes liberally for progress indicators. They become invisible in
+agent mode, so you don't have to guard them.
+
+### `reportError(error, opts)`
+
+Renders an error without exiting. In JSON mode, emits a structured
+`{ ok: false, error, stack? }` object to **stdout** so agents parse it
+as data. In human mode, writes a colored message to stderr.
+
+```ts
+try {
+  await riskyOperation();
+} catch (err) {
+  const payload = reportError(err, opts);
+  // payload is { ok: false, error, stack? }
+  // Decide exit code yourself - this function never exits.
+  process.exit(1);
+}
+```
+
+**Critical**: `reportError` is the only safe way to render errors in a
+dual-mode CLI. Using `console.error(err)` mixes the error into stderr
+where next-step hints also live, breaking agent parsing.
+
+## Discipline
+
+The whole block is 170 lines and enforces one thing: **stream discipline**.
+
+```
+stdout  →  data the agent needs to make decisions
+stderr  →  guidance the agent or human can optionally follow
+```
+
+If you only remember one thing: **never `console.log()` anything except
+the canonical answer**. Everything else goes through `note()`,
+`emitSuccess()`, or `reportError()`.
+
+## Pairs with next-steps
+
+`json-mode` is the foundation. [`next-steps`](/blocks/next-steps) builds
+on top of it to emit post-command guidance ("here's what to run next")
+using the same mode detection and the same stderr stream discipline.
+
+Install `next-steps` and it auto-pulls `json-mode` via registry dependencies.
+
+```bash
+bunx shadcn@latest add https://cligentic.railly.dev/r/next-steps.json
+```

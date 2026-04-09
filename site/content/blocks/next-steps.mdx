@@ -1,0 +1,141 @@
+## The problem
+
+Agents operating CLIs have two jobs: read the output, decide the next
+command. Job one is easy - parse stdout. Job two is hard - how does the
+agent know which command to try next?
+
+The usual answer is "stuff a manual into the system prompt." That
+approach has three failure modes:
+
+- **Stale** - the prompt drifts out of sync with the CLI's actual commands
+- **Expensive** - every agent invocation pays for the whole manual
+- **Lossy** - the agent has to re-derive "what makes sense next" from first
+  principles, every time
+
+The `next-steps` block replaces that with **structured post-command hints
+written to stderr as NDJSON**. The CLI tells the agent what to try next.
+The agent reads it. No prompt engineering.
+
+## Quickstart
+
+```ts
+import { emit } from "@/cli/agent/json-mode";
+import { emitNextSteps } from "@/cli/agent/next-steps";
+
+program.command("list").action(async (opts) => {
+  const items = await fetchItems();
+  emit(items, opts);
+
+  emitNextSteps(
+    [
+      { command: "myapp show <id>", description: "see details for one item" },
+      { command: "myapp quote <id>", description: "live price" },
+      {
+        command: "myapp export --format csv",
+        description: "export all items",
+        optional: true,
+      },
+    ],
+    opts,
+  );
+});
+```
+
+Running `myapp list --json` produces two independent streams:
+
+```
+STDOUT:
+[{"id":"AAPL","qty":10},{"id":"MSFT","qty":5},{"id":"GOOG","qty":2}]
+
+STDERR:
+{"type":"next-step","command":"myapp show <id>","description":"see details"}
+{"type":"next-step","command":"myapp quote <id>","description":"live price"}
+{"type":"next-step","command":"myapp export --format csv","description":"export all","optional":true}
+```
+
+In human mode (TTY), the same call renders a formatted block with arrow
+bullets after the main output. No branching in the author's code.
+
+## The agent loop
+
+This is the pattern that makes `next-steps` worth installing:
+
+```ts
+// In the agent (pseudocode)
+const { stdout, stderr } = await spawn("myapp", ["list", "--json"]);
+
+const data = JSON.parse(stdout);
+
+const hints = stderr
+  .split("\n")
+  .filter(Boolean)
+  .map((line) => JSON.parse(line))
+  .filter((obj) => obj.type === "next-step");
+
+// Agent now has both:
+//   data  = what happened
+//   hints = what to try next, with descriptions
+//
+// No system prompt needed. The CLI teaches itself.
+nextCommand(data, hints);
+```
+
+The `type: "next-step"` discriminator lets agents filter next-step hints
+from other stderr content (logs, telemetry, future event types) without
+ambiguity.
+
+## Signature
+
+```ts
+export type NextStep = {
+  /** The literal command to run. Use `<id>` placeholders for params. */
+  command: string;
+  /** A short (2-10 word) hint for why this step matters. */
+  description: string;
+  /** If true, suggested but not required. Agents can skip. */
+  optional?: boolean;
+};
+
+export function emitNextSteps(
+  steps: NextStep[],
+  opts?: EmitOptions,
+): void;
+
+export function emitNextStep(
+  step: NextStep,
+  opts?: EmitOptions,
+): void;
+```
+
+## When to use it
+
+After every command that has a meaningful follow-up. The rule of thumb:
+
+- **`list`** → show, quote, export, filter
+- **`show`** → update, delete, list
+- **`create`** → show, list, next-required-step
+- **`login`** → whoami, first-run setup
+- **`error`** → doctor, logs, retry, contact support
+
+If your command has no follow-up, don't emit hints. Empty lists render nothing.
+
+## The discipline rule
+
+`next-steps` writes to **stderr only**. Never stdout. This keeps stdout
+mono-typed as "the answer to this command" and stderr as "everything else
+the agent or human might care about."
+
+Breaking this rule - emitting hints to stdout - destroys the agent parse
+contract. Don't do it.
+
+## Chained with json-mode
+
+This block declares `json-mode` as a registry dependency. Installing
+`next-steps` automatically pulls `json-mode` into your project. The two
+share `detectMode()` so mode detection stays consistent across both.
+
+```bash
+bunx shadcn@latest add https://cligentic.railly.dev/r/next-steps.json
+# → installs next-steps AND json-mode
+# → installs picocolors (declared dep, deduped)
+```

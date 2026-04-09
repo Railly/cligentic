@@ -1,0 +1,43 @@
+## What it does
+
+Prints a gradient ASCII wordmark when your CLI is invoked without args
+or with `--help`. The first thing users see. Sets the tone.
+
+## Quickstart
+
+```ts
+import { printBanner } from "@/cli/foundation/banner";
+
+printBanner({
+  name: "myapp",
+  tagline: "Ship faster.",
+  version: "1.0.0",
+  gradient: ["#FF6B1A", "#DB2627"],
+});
+```
+
+## Options
+
+```ts
+export type BannerOptions = {
+  name: string;
+  tagline?: string;
+  version?: string;
+  gradient?: [string, string]; // [top, bottom] hex colors
+};
+```
+
+The gradient interpolates between two colors vertically across the 5
+lines of the ASCII block letters. Pick your brand colors.
+
+## NO_COLOR support
+
+When `NO_COLOR` is set or stdout isn't a TTY, the banner falls back to
+plain text: just the name, version, and tagline with no ANSI codes.
+
+## Customizing the font
+
+The built-in renderer uses minimal 5x5 block letters. If you want
+fancier output (figlet-style), replace the `toAsciiBlock` function
+and `GLYPHS` map in your copy with a figlet library call. You own the
+code.

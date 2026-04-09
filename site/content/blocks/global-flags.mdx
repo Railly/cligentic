@@ -1,0 +1,48 @@
+## What it does
+
+Defines the six global flags every agent-first CLI should expose.
+Normalizes raw argv output from any parser (commander, citty, yargs)
+into a typed `GlobalFlags` object that other blocks consume.
+
+## The six flags
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--json` | auto (piped = true) | Emit JSON for agents |
+| `--dry-run` | false | Validate without calling upstream |
+| `--profile <name>` | none | Config profile to use |
+| `--no-input` | auto (CI = true) | Never prompt, fail fast |
+| `-q, --quiet` | false | Suppress non-essential output |
+| `-v, --verbose` | false | Verbose logging to stderr |
+
+## Quickstart
+
+```ts
+import { parseGlobalFlags, getGlobalFlagDefs } from "@/cli/foundation/global-flags";
+
+// Register flags with your parser
+for (const f of getGlobalFlagDefs()) {
+  program.option(f.flag, f.description);
+}
+
+// In a command handler
+program.command("list").action(async (rawOpts) => {
+  const flags = parseGlobalFlags(rawOpts);
+
+  // Pass to other blocks
+  emit(data, flags);           // json-mode reads flags.json
+  note("loading...", flags);   // respects flags.quiet
+  loadConfig(dir, flags.profile);  // config reads flags.profile
+});
+```
+
+## Why these six
+
+- `--json` and `--quiet` are consumed by [`json-mode`](/blocks/json-mode)
+- `--profile` is consumed by [`config`](/blocks/config)
+- `--dry-run` is consumed by any write operation (safety guard)
+- `--no-input` prevents prompts in CI and agent mode
+- `--verbose` enables debug output on stderr
+
+Every flag has an env var fallback (`CLI_JSON`, `CI`, `CLI_PROFILE`)
+so agents can set behavior via environment without flag parsing.

@@ -1,0 +1,62 @@
+## What it does
+
+Maps upstream API error codes to typed `AppError` objects with a code,
+human-readable message, and an actionable hint. Agents read the `hint`
+field to self-correct in one iteration instead of guessing.
+
+## Quickstart
+
+```ts
+import { AppError, mapError } from "@/cli/foundation/error-map";
+
+const errors = {
+  AUTH_EXPIRED: {
+    name: "AuthExpired",
+    human: "Session expired.",
+    hint: "Run: myapp login",
+  },
+  RATE_LIMIT: {
+    name: "RateLimit",
+    human: "Too many requests.",
+    hint: "Wait 60s and retry.",
+  },
+};
+
+try {
+  await api.call();
+} catch (err) {
+  throw mapError(err, errors);
+}
+```
+
+## The AppError class
+
+```ts
+class AppError extends Error {
+  code: string;
+  human: string;
+  hint?: string;
+
+  toJSON(): { ok: false; code: string; error: string; hint?: string }
+}
+```
+
+`toJSON()` makes it work with [`json-mode`](/blocks/json-mode)'s
+`reportError()`. The structured output includes the hint so agents
+can parse it and act.
+
+## API
+
+```ts
+mapError(err: unknown, errors: ErrorMap): AppError
+```
+
+If the error has a `.code` property matching a key in the map, returns
+the mapped AppError. Otherwise wraps the original error as `UNKNOWN`.
+
+## Why hints matter for agents
+
+Without a hint, an agent that encounters "Session expired" has to
+re-derive "I should run the login command" from context. With a hint,
+the agent reads `"Run: myapp login"` and executes it. One fewer
+reasoning step. Faster recovery.

@@ -1,0 +1,60 @@
+## What it does
+
+Loads JSON config from your app's config directory with support for
+named profiles. A `--profile production` flag swaps the active config
+without multiple config files.
+
+## Quickstart
+
+```ts
+import { getAppPaths } from "@/cli/foundation/xdg-paths";
+import { loadConfig, saveConfig } from "@/cli/foundation/config";
+
+type MyConfig = {
+  apiUrl: string;
+  timeout: number;
+};
+
+const paths = getAppPaths("myapp");
+const config = loadConfig<MyConfig>(paths.config, "production");
+// config.apiUrl, config.timeout
+```
+
+## Config file shape
+
+```json
+{
+  "defaults": {
+    "apiUrl": "https://api.example.com",
+    "timeout": 5000
+  },
+  "profiles": {
+    "production": {
+      "apiUrl": "https://api.prod.example.com",
+      "timeout": 10000
+    },
+    "staging": {
+      "apiUrl": "https://api.staging.example.com"
+    }
+  }
+}
+```
+
+Merge order: `defaults` then profile overrides on top. Missing keys
+in the profile fall back to defaults.
+
+## API
+
+```ts
+loadConfig<T>(configDir, profile?): T
+saveConfig<T>(configDir, update): void
+listProfiles(configDir): string[]
+```
+
+`saveConfig` merges into the existing file using [`atomic-write`](/blocks/atomic-write).
+Existing profiles you don't touch are preserved.
+
+## Pair with
+
+- [`xdg-paths`](/blocks/xdg-paths) for the config directory path
+- [`global-flags`](/blocks/global-flags) for the `--profile` flag definition

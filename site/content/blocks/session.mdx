@@ -1,0 +1,59 @@
+## What it does
+
+Persists auth tokens between CLI invocations. Load on boot, save after
+login, clear on logout, check expiry. Uses atomic writes and 0o600
+permissions so tokens aren't world-readable.
+
+## Quickstart
+
+```ts
+import { getAppPaths } from "@/cli/foundation/xdg-paths";
+import { loadSession, saveSession, clearSession, isExpired } from "@/cli/foundation/session";
+
+type MySession = {
+  accessToken: string;
+  refreshToken: string;
+  createdAt: string;
+  expiresAt: string;
+};
+
+const paths = getAppPaths("myapp");
+
+// On boot
+const session = loadSession<MySession>(paths.sessions);
+if (!session || isExpired(session.expiresAt)) {
+  // re-auth flow
+}
+
+// After login
+saveSession(paths.sessions, {
+  accessToken: "...",
+  refreshToken: "...",
+  createdAt: new Date().toISOString(),
+  expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+});
+
+// On logout
+clearSession(paths.sessions);
+```
+
+## File location
+
+Sessions are stored at `{sessionsDir}/current.json` with mode `0o600`.
+Uses [`atomic-write`](/blocks/atomic-write) so a crash mid-save never
+corrupts the token file.
+
+## API
+
+```ts
+loadSession<T>(sessionsDir): T | null
+saveSession<T>(sessionsDir, session): void
+clearSession(sessionsDir): void
+isExpired(expiresAt?): boolean
+```
+
+## Pair with
+
+- [`xdg-paths`](/blocks/xdg-paths) provides `paths.sessions` directory
+- [`atomic-write`](/blocks/atomic-write) for safe persistence
+- [`open-url`](/blocks/open-url) for OAuth browser redirect in the login flow

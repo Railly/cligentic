@@ -130,6 +130,74 @@
       ]
     },
     {
+      "name": "banner",
+      "type": "registry:file",
+      "title": "banner",
+      "description": "Gradient ASCII wordmark for your CLI. Shown on bare invoke or --help. Vertical gradient between two hex colors. Respects NO_COLOR. Includes minimal block-letter renderer.",
+      "registryDependencies": ["http://localhost:4711/r/detect.json"],
+      "files": [
+        {
+          "path": "registry/foundation/banner.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/banner.ts"
+        }
+      ]
+    },
+    {
+      "name": "config",
+      "type": "registry:file",
+      "title": "config",
+      "description": "Profile-aware JSON config loader. Reads from the app's config directory with multi-profile support (--profile production). Merge precedence: defaults < profile overrides.",
+      "registryDependencies": ["http://localhost:4711/r/atomic-write.json"],
+      "files": [
+        {
+          "path": "registry/foundation/config.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/config.ts"
+        }
+      ]
+    },
+    {
+      "name": "session",
+      "type": "registry:file",
+      "title": "session",
+      "description": "Auth token persistence. Load on boot, save after login, clear on logout, check expiry. Atomic writes, 0o600 permissions. The companion of every login command.",
+      "registryDependencies": ["http://localhost:4711/r/atomic-write.json"],
+      "files": [
+        {
+          "path": "registry/foundation/session.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/session.ts"
+        }
+      ]
+    },
+    {
+      "name": "error-map",
+      "type": "registry:file",
+      "title": "error-map",
+      "description": "Typed AppError class with code, name, human message, and hint. Maps upstream API errors to actionable messages. Agents read the hint field to self-correct.",
+      "files": [
+        {
+          "path": "registry/foundation/error-map.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/error-map.ts"
+        }
+      ]
+    },
+    {
+      "name": "global-flags",
+      "type": "registry:file",
+      "title": "global-flags",
+      "description": "Standard global flags for agent-first CLIs: --json, --dry-run, --profile, --no-input, --quiet, --verbose. Normalizes raw argv into typed GlobalFlags. Includes flag definitions for any parser.",
+      "files": [
+        {
+          "path": "registry/foundation/global-flags.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/global-flags.ts"
+        }
+      ]
+    },
+    {
       "name": "killswitch",
       "type": "registry:file",
       "title": "killswitch",

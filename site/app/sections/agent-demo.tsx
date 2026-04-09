@@ -1,12 +1,41 @@
 import { Section } from "../components/section";
-import { TerminalPreview } from "../components/terminal-preview";
+import { type DemoStep, TerminalDemo } from "../components/terminal-demo";
+
+const AGENT_STEPS: DemoStep[] = [
+  {
+    command: "myapp portfolio --json",
+    output: [
+      { text: "", type: "empty" },
+      { text: "  stdout:", type: "muted" },
+      { text: '  {"found":3,"items":[', type: "output" },
+      { text: '    {"id":"AAPL","qty":10,"price":189.50},', type: "output" },
+      { text: '    {"id":"MSFT","qty":5,"price":421.30},', type: "output" },
+      { text: '    {"id":"GOOG","qty":2,"price":176.80}', type: "output" },
+      { text: "  ]}", type: "output" },
+      { text: "", type: "empty" },
+      { text: "  stderr:", type: "muted" },
+      { text: '  {"type":"next-step","command":"myapp show AAPL","description":"detail view"}', type: "accent" },
+      { text: '  {"type":"next-step","command":"myapp quote MSFT","description":"live price"}', type: "accent" },
+    ],
+  },
+  {
+    command: "myapp show AAPL --json",
+    output: [
+      { text: "", type: "empty" },
+      { text: '  {"ticker":"AAPL","name":"Apple Inc.","qty":10,', type: "output" },
+      { text: '   "avgCost":142.30,"currentPrice":189.50,', type: "output" },
+      { text: '   "gain":"+33.1%","gainUsd":472.00}', type: "output" },
+      { text: "", type: "empty" },
+      { text: '  {"type":"next-step","command":"myapp order sell AAPL","description":"take profit"}', type: "accent" },
+      { text: '  {"type":"next-step","command":"myapp quote AAPL","description":"refresh price"}', type: "accent" },
+    ],
+  },
+];
 
 /**
- * AgentDemo — the flagship section. Shows the actual stdout/stderr split
- * from a real cligentic-powered CLI invocation, with an agent consuming
- * both streams independently.
- *
- * This is the screenshot that should go on the HN thread.
+ * AgentDemo section. Animated terminal showing a real agent-style
+ * interaction: run a command, read JSON stdout, follow next-step
+ * hints from stderr, run the suggested command.
  */
 export function AgentDemo() {
   return (
@@ -14,55 +43,39 @@ export function AgentDemo() {
       id="agent-demo"
       kicker="The flagship"
       title="stdout is data. stderr is guidance. Agents read both."
-      description="json-mode and next-steps work together to split a command's output into two mono-typed streams. Agents parse stdout as JSON (the answer) and stderr as NDJSON next-step hints (what to try next). No system prompt instruction needed. The CLI teaches itself."
+      description="json-mode and next-steps work together to split a command's output into two streams. Agents parse stdout as JSON (the answer) and stderr as NDJSON next-step hints (what to try next). No system prompt needed. The CLI teaches itself."
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        <TerminalPreview title="portfolio --json (stdout)" stream="stdout">
-          {`{
-  "found": 3,
-  "items": [
-    { "id": "AAPL", "qty": 10 },
-    { "id": "MSFT", "qty": 5 },
-    { "id": "GOOG", "qty": 2 }
-  ]
-}`}
-        </TerminalPreview>
-
-        <TerminalPreview title="portfolio --json (stderr)" stream="stderr">
-          {`{"type":"next-step","command":"myapp show AAPL","description":"detail view"}
-{"type":"next-step","command":"myapp quote MSFT","description":"live price"}
-{"type":"next-step","command":"myapp export --format csv","description":"export all","optional":true}`}
-        </TerminalPreview>
+      <div className="mx-auto max-w-3xl">
+        <TerminalDemo
+          steps={AGENT_STEPS}
+          title="agent loop"
+        />
       </div>
 
-      <div className="mt-6 rounded-lg border border-[color:var(--color-bg-border)] bg-[color:var(--color-bg-elevated)] p-5">
+      <div className="mx-auto mt-8 max-w-3xl rounded-lg border border-[color:var(--color-bg-border)] bg-[color:var(--color-bg-elevated)] p-5">
         <div className="mb-3 font-mono text-[10px] uppercase tracking-widest text-[color:var(--color-accent)]">
-          The agent loop
+          The loop
         </div>
         <pre className="overflow-x-auto font-mono text-[12px] leading-relaxed text-[color:var(--color-fg-muted)]">
           <span className="text-[color:var(--color-fg-dim)]">
-            {"// agent pseudocode\n"}
+            {"// agent reads both streams\n"}
           </span>
           <span className="text-[color:var(--color-fg)]">const</span>
-          {" { stdout, stderr } = await spawn(cli, args);\n"}
-          <span className="text-[color:var(--color-fg)]">const</span>
-          {" data = JSON.parse(stdout);                     "}
-          <span className="text-[color:var(--color-fg-dim)]">
-            // pure data, no contamination
-          </span>
-          {"\n"}
+          {" data = JSON.parse(stdout);\n"}
           <span className="text-[color:var(--color-fg)]">const</span>
           {" hints = stderr.split("}
           <span className="text-[color:var(--color-accent)]">{'"\\n"'}</span>
-          {").filter(Boolean)\n  .map(JSON.parse)\n  .filter(o => o.type === "}
+          {")\n"}
+          {"  .map(JSON.parse)\n"}
+          {"  .filter(o => o.type === "}
           <span className="text-[color:var(--color-accent)]">
             {'"next-step"'}
           </span>
           {");\n\n"}
           <span className="text-[color:var(--color-fg-dim)]">
-            {"// agent now has both: what happened + what to try next\n"}
+            {"// agent picks the next command from hints\n"}
           </span>
-          {"nextCommand(data, hints);"}
+          {"run(hints[0].command);"}
         </pre>
       </div>
     </Section>

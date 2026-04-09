@@ -12,7 +12,8 @@
 //   }
 
 import { execSync } from "node:child_process";
-import { currentPlatform, hasCommand } from "./detect";
+import { platform } from "node:os";
+import { hasCommand, isWsl } from "./detect";
 
 export type CopyResult = {
   copied: boolean;
@@ -38,7 +39,7 @@ export async function copyToClipboard(
   options: CopyOptions = {},
 ): Promise<CopyResult> {
   const { dryRun = false } = options;
-  const os = currentPlatform();
+  const os = platform();
 
   if (os === "darwin") {
     if (dryRun) return { copied: true, via: "pbcopy", reason: "would run: pbcopy" };
@@ -54,7 +55,7 @@ export async function copyToClipboard(
     return { copied: false, via: "manual", reason: "powershell Set-Clipboard failed" };
   }
 
-  if (os === "wsl") {
+  if (os === "linux" && isWsl()) {
     if (hasCommand("clip.exe")) {
       if (dryRun) return { copied: true, via: "clip.exe", reason: "would run: clip.exe" };
       if (tryExec("clip.exe", text)) return { copied: true, via: "clip.exe" };

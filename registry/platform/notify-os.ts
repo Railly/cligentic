@@ -9,7 +9,8 @@
 //   const result = await notifyOs("Deploy complete", "myapp v1.2.0 is live");
 
 import { execSync } from "node:child_process";
-import { currentPlatform, hasCommand, isCi } from "./detect";
+import { platform } from "node:os";
+import { hasCommand, isCi, isWsl } from "./detect";
 
 export type NotifyResult = {
   sent: boolean;
@@ -36,7 +37,7 @@ export async function notifyOs(
 
   if (isCi()) return { sent: false, via: "skipped", reason: "CI environment" };
 
-  const os = currentPlatform();
+  const os = platform();
 
   if (os === "darwin") {
     const soundClause = sound ? ' sound name "default"' : "";
@@ -50,7 +51,7 @@ export async function notifyOs(
     }
   }
 
-  if (os === "win32" || os === "wsl") {
+  if (os === "win32" || isWsl()) {
     const psCmd = `powershell.exe -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $n = New-Object System.Windows.Forms.NotifyIcon; $n.Icon = [System.Drawing.SystemIcons]::Information; $n.Visible = $true; $n.ShowBalloonTip(5000, '${title.replace(/'/g, "''")}', '${message.replace(/'/g, "''")}', 'Info')"`;
     if (dryRun) return { sent: true, via: "powershell", reason: "would run: PowerShell notification" };
     try {

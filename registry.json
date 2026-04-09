@@ -95,7 +95,6 @@
       "type": "registry:file",
       "title": "xdg-paths",
       "description": "XDG Base Directory Spec resolver with macOS (Library) and Windows (AppData) fallbacks. Gives your CLI canonical config/state/cache/audit/sessions paths. APP_HOME env override for testing.",
-      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/foundation/xdg-paths.ts",
@@ -109,7 +108,6 @@
       "type": "registry:file",
       "title": "atomic-write",
       "description": "Write files atomically: temp file, fsync, rename. Prevents corruption from crashes or concurrent CLI processes. Windows-aware (unlink before rename). Includes atomicWriteJson convenience.",
-      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/foundation/atomic-write.ts",

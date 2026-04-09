@@ -1,42 +1,22 @@
 // cligentic block: detect
 //
 // Environment detection helpers shared across platform blocks.
-// Detects OS, WSL, CI, headless environments, and binary availability.
-//
-// This block is auto-installed as a dependency when you add any platform
-// block (open-url, copy-clipboard, notify-os). You can also install it
-// standalone if you need detection helpers in your own commands.
+// Detects WSL, CI, headless environments, and binary availability.
 //
 // Usage:
-//   import { isWsl, isCi, hasCommand, currentPlatform } from "./platform/detect";
+//   import { isWsl, isCi, hasCommand } from "./platform/detect";
 
 import { existsSync, readFileSync } from "node:fs";
-import { platform as osPlatform } from "node:os";
-
-export type Platform = "darwin" | "win32" | "wsl" | "linux" | "unknown";
-
-/**
- * Returns the current platform with WSL as a distinct value.
- * More useful than raw `process.platform` because WSL-specific
- * behavior (routing to Windows host binaries) is common in CLI code.
- */
-export function currentPlatform(): Platform {
-  const os = osPlatform();
-  if (os === "darwin") return "darwin";
-  if (os === "win32") return "win32";
-  if (os === "linux" && isWsl()) return "wsl";
-  if (os === "linux") return "linux";
-  return "unknown";
-}
+import { platform } from "node:os";
 
 /**
  * Detects WSL (Windows Subsystem for Linux). Reads /proc/version once
  * and caches the result for the lifetime of the process.
  */
 let wslCache: boolean | null = null;
-function isWsl(): boolean {
+export function isWsl(): boolean {
   if (wslCache !== null) return wslCache;
-  if (osPlatform() !== "linux") {
+  if (platform() !== "linux") {
     wslCache = false;
     return false;
   }
@@ -64,25 +44,23 @@ export function isCi(): boolean {
 }
 
 /**
- * Detects headless Linux (no graphical display). Common cases:
- * SSH without -X, Docker containers, CI runners.
+ * Detects headless Linux (no graphical display).
  * WSL is NOT headless because it can open browsers on the Windows host.
  */
 export function isHeadlessLinux(): boolean {
-  if (osPlatform() !== "linux") return false;
+  if (platform() !== "linux") return false;
   if (isWsl()) return false;
   return !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY;
 }
 
 /**
- * Checks if a command exists in PATH. Cross-platform: handles Windows
- * .exe/.cmd/.bat extensions automatically. Result is not cached because
- * PATH can change between calls (rare but possible).
+ * Checks if a command exists in PATH. Handles Windows .exe/.cmd/.bat
+ * extensions automatically.
  */
 export function hasCommand(cmd: string): boolean {
-  const separator = osPlatform() === "win32" ? ";" : ":";
+  const separator = platform() === "win32" ? ";" : ":";
   const paths = (process.env.PATH || "").split(separator);
-  const exts = osPlatform() === "win32" ? [".exe", ".cmd", ".bat", ""] : [""];
+  const exts = platform() === "win32" ? [".exe", ".cmd", ".bat", ""] : [""];
   for (const p of paths) {
     for (const ext of exts) {
       if (existsSync(`${p}/${cmd}${ext}`)) return true;
@@ -101,9 +79,7 @@ export type EmitOptions = {
 };
 
 /**
- * Detects whether the CLI should emit structured JSON or human-readable
- * output. Used by json-mode's emit() and next-steps' emitNextSteps().
- *
+ * Detects whether the CLI should emit structured JSON or human output.
  * Precedence: explicit --json flag > NO_JSON env > TTY detection > default human.
  */
 export function detectMode(opts: EmitOptions = {}): OutputMode {
@@ -114,8 +90,7 @@ export function detectMode(opts: EmitOptions = {}): OutputMode {
 }
 
 /**
- * Detects whether colors should be used. Respects NO_COLOR
- * (https://no-color.org) and FORCE_COLOR env vars.
+ * Detects whether colors should be used. Respects NO_COLOR and FORCE_COLOR.
  */
 export function shouldColor(): boolean {
   if (process.env.NO_COLOR) return false;

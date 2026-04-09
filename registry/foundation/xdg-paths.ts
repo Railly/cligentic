@@ -25,7 +25,7 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { currentPlatform } from "../platform/detect";
+import { platform } from "node:os";
 
 export type AppPaths = {
   /** Primary config directory. TOML/JSON config files live here. */
@@ -62,7 +62,7 @@ export function getAppPaths(appName: string): AppPaths {
     return buildPaths(override);
   }
 
-  const os = currentPlatform();
+  const os = platform();
   const home = homedir();
 
   if (os === "darwin") {

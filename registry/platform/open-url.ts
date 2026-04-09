@@ -20,7 +20,8 @@
 //   }
 
 import { spawn } from "node:child_process";
-import { currentPlatform, hasCommand, isCi, isHeadlessLinux } from "./detect";
+import { platform } from "node:os";
+import { hasCommand, isCi, isHeadlessLinux, isWsl } from "./detect";
 
 export type OpenUrlResult = {
   url: string;
@@ -73,7 +74,7 @@ export async function openUrl(
     }
   }
 
-  const os = currentPlatform();
+  const os = platform();
 
   if (os === "darwin") {
     if (dryRun) return { url, opened: true, via: "darwin", reason: `would run: open ${url}` };
@@ -95,7 +96,7 @@ export async function openUrl(
     }
   }
 
-  if (os === "wsl") {
+  if (os === "linux" && isWsl()) {
     if (hasCommand("wslview")) {
       if (dryRun) return { url, opened: true, via: "wsl", reason: "would run: wslview" };
       try { spawnDetached("wslview", [url]); return { url, opened: true, via: "wsl" }; } catch { /* fall through */ }

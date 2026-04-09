@@ -29,16 +29,8 @@ export function currentPlatform(): Platform {
   return "unknown";
 }
 
-export function isMac(): boolean {
-  return osPlatform() === "darwin";
-}
-
 export function isWindows(): boolean {
   return osPlatform() === "win32";
-}
-
-export function isLinux(): boolean {
-  return osPlatform() === "linux" && !isWsl();
 }
 
 /**
@@ -46,7 +38,7 @@ export function isLinux(): boolean {
  * and caches the result for the lifetime of the process.
  */
 let wslCache: boolean | null = null;
-export function isWsl(): boolean {
+function isWsl(): boolean {
   if (wslCache !== null) return wslCache;
   if (osPlatform() !== "linux") {
     wslCache = false;

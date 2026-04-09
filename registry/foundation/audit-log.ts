@@ -98,20 +98,3 @@ export function tailAudit(auditDir: string, n = 20): StoredRecord[] {
   return results;
 }
 
-/**
- * Counts total audit records across all log files.
- * Useful for "myapp audit stats" commands.
- */
-export function countAuditRecords(auditDir: string): number {
-  let total = 0;
-  try {
-    const files = readdirSync(auditDir).filter((f) => f.endsWith(".jsonl"));
-    for (const file of files) {
-      const content = readFileSync(join(auditDir, file), "utf8");
-      total += content.trim().split("\n").filter(Boolean).length;
-    }
-  } catch {
-    // dir doesn't exist yet
-  }
-  return total;
-}

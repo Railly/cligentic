@@ -92,10 +92,3 @@ export function emitNextSteps(steps: NextStep[], opts: EmitOptions = {}): void {
   process.stderr.write("\n");
 }
 
-/**
- * Convenience: emit a single next-step hint. Useful when you only have one
- * natural follow-up.
- */
-export function emitNextStep(step: NextStep, opts: EmitOptions = {}): void {
-  emitNextSteps([step], opts);
-}

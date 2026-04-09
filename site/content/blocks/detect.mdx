@@ -1,34 +1,31 @@
 ## What it does
 
-`detect` is the shared detection layer that all platform blocks import from.
-Instead of each block copy-pasting `isWsl()`, `hasCommand()`, and `isCi()`,
-they all import from this single file. One fix, all blocks benefit.
+`detect` is the shared detection layer that all platform and agent blocks
+import from. Instead of each block duplicating environment checks, they
+all import from this single file. One fix, all blocks benefit.
 
 This block is auto-installed when you add any platform block (`open-url`,
-`copy-clipboard`, `notify-os`). You can also install it standalone.
+`copy-clipboard`, `notify-os`) or agent block (`json-mode`, `next-steps`).
 
 ## API
 
 ```ts
 import {
   currentPlatform,   // "darwin" | "win32" | "wsl" | "linux" | "unknown"
-  isMac,             // process.platform === "darwin"
   isWindows,         // process.platform === "win32"
-  isLinux,           // linux AND not WSL
-  isWsl,             // WSL1 or WSL2 (reads /proc/version, cached)
   isCi,              // CI, GITHUB_ACTIONS, GITLAB_CI, etc.
   isHeadlessLinux,   // no DISPLAY, no WAYLAND_DISPLAY, not WSL
   hasCommand,        // checks if a binary exists in PATH (cross-OS)
+  detectMode,        // "human" | "json" based on --json flag / TTY / pipe
+  shouldColor,       // respects NO_COLOR and FORCE_COLOR
 } from "@/cli/platform/detect";
 ```
 
 ## Why a separate block
 
-Three reasons:
-
-- **DRY**: `isWsl()` was copy-pasted across 3 blocks. One bug fix had to land in 3 places.
+- **DRY**: WSL detection, CI detection, and mode detection were duplicated across blocks. One bug fix had to land in multiple places.
 - **Cache**: WSL detection reads `/proc/version`. The result is cached per-process. Without sharing, each block reads the file independently.
-- **Composable**: your own commands can import `detect` too. Need `isCi()` in your deploy guard? Import it. No need to reinvent the check.
+- **Composable**: your own commands can import `detect` too. Need `isCi()` in your deploy guard? Import it.
 
 ## `currentPlatform()` vs `process.platform`
 
@@ -57,5 +54,9 @@ if (hasCommand("docker")) {
 }
 ```
 
-Not cached, because `PATH` can theoretically change during process
-lifetime (rare but possible with dynamic env manipulation).
+## `detectMode(opts)`
+
+Returns `"human"` or `"json"`. Precedence:
+explicit `--json` flag > `NO_JSON` env > TTY detection > default human.
+
+Used by `json-mode` and `next-steps` blocks for consistent mode resolution.

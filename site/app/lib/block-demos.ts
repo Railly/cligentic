@@ -167,4 +167,193 @@ export const blockDemos: Record<string, { title: string; steps: DemoStep[] }> = 
       },
     ],
   },
+  "audit-log": {
+    title: "audit-log demo",
+    steps: [
+      {
+        command: "myapp order buy AAPL --qty 10",
+        output: [
+          { text: "  Order placed. ID: ord_abc123", type: "accent" },
+        ],
+      },
+      {
+        command: "myapp audit tail",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  RECENT AUDIT LOG", type: "muted" },
+          { text: "", type: "empty" },
+          { text: "  2026-04-09 12:01  order.placed    ok      AAPL x10", type: "output" },
+          { text: "  2026-04-09 11:58  auth.login      ok      hunter@railly.dev", type: "output" },
+          { text: "  2026-04-09 11:45  config.updated  ok      profile=production", type: "output" },
+          { text: "  2026-04-09 11:30  order.placed    blocked killswitch ON", type: "accent" },
+          { text: "", type: "empty" },
+          { text: "  4 records across 1 file", type: "muted" },
+        ],
+      },
+    ],
+  },
+  config: {
+    title: "config demo",
+    steps: [
+      {
+        command: "myapp config show",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  Active profile: default", type: "muted" },
+          { text: '  apiUrl:   "https://api.example.com"', type: "output" },
+          { text: "  timeout:  5000", type: "output" },
+          { text: "", type: "empty" },
+        ],
+      },
+      {
+        command: "myapp config show --profile production",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  Active profile: production", type: "accent" },
+          { text: '  apiUrl:   "https://api.prod.example.com"', type: "output" },
+          { text: "  timeout:  10000", type: "output" },
+          { text: "", type: "empty" },
+        ],
+      },
+    ],
+  },
+  session: {
+    title: "session demo",
+    steps: [
+      {
+        command: "myapp whoami",
+        output: [
+          { text: "  Not logged in.", type: "muted" },
+        ],
+      },
+      {
+        command: "myapp login",
+        output: [
+          { text: "  Opening browser...", type: "muted" },
+          { text: "  Authenticated as hunter@railly.dev", type: "accent" },
+          { text: "  Session saved to ~/.config/myapp/sessions/", type: "output" },
+        ],
+      },
+      {
+        command: "myapp whoami",
+        output: [
+          { text: "  hunter@railly.dev", type: "accent" },
+          { text: "  Expires: 2026-04-10T12:00:00Z", type: "muted" },
+        ],
+      },
+    ],
+  },
+  "error-map": {
+    title: "error-map demo",
+    steps: [
+      {
+        command: "myapp order buy INVALID_TICKER",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  Error: TickerNotFound", type: "accent" },
+          { text: '  "INVALID_TICKER" is not a valid ticker symbol.', type: "output" },
+          { text: "", type: "empty" },
+          { text: "  Hint: Run myapp search <query> to find valid tickers.", type: "accent" },
+          { text: "", type: "empty" },
+        ],
+      },
+      {
+        command: "myapp order buy AAPL --qty 999999",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  Error: SpendCapExceeded", type: "accent" },
+          { text: "  Order notional $18.9M exceeds cap of $5,000.", type: "output" },
+          { text: "", type: "empty" },
+          { text: "  Hint: Increase spend_cap_usd in config or use --profile paper.", type: "accent" },
+          { text: "", type: "empty" },
+        ],
+      },
+    ],
+  },
+  "global-flags": {
+    title: "global-flags demo",
+    steps: [
+      {
+        command: "myapp list --json --quiet --profile production",
+        output: [
+          { text: '  {"id":"AAPL","qty":10}', type: "output" },
+          { text: '  {"id":"MSFT","qty":5}', type: "output" },
+        ],
+      },
+      {
+        command: "myapp deploy --dry-run --verbose",
+        output: [
+          { text: "  [verbose] Loading config: production", type: "muted" },
+          { text: "  [verbose] Resolving dependencies...", type: "muted" },
+          { text: "  [verbose] Building assets...", type: "muted" },
+          { text: "", type: "empty" },
+          { text: "  DRY RUN: would deploy v1.2.0 to prod.example.com", type: "accent" },
+          { text: "  No changes made.", type: "output" },
+        ],
+      },
+    ],
+  },
+  detect: {
+    title: "myapp doctor",
+    steps: [
+      {
+        command: "myapp doctor",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  ENVIRONMENT", type: "muted" },
+          { text: "  Platform:   darwin (macOS)", type: "output" },
+          { text: "  WSL:        no", type: "output" },
+          { text: "  CI:         no", type: "output" },
+          { text: "  TTY:        yes", type: "accent" },
+          { text: "  Headless:   no", type: "output" },
+          { text: "", type: "empty" },
+          { text: "  BINARIES", type: "muted" },
+          { text: "  git:        /usr/bin/git", type: "accent" },
+          { text: "  docker:     /usr/local/bin/docker", type: "accent" },
+          { text: "  bun:        /usr/local/bin/bun", type: "accent" },
+          { text: "", type: "empty" },
+          { text: "  All checks passed.", type: "accent" },
+        ],
+      },
+    ],
+  },
+  "xdg-paths": {
+    title: "xdg-paths demo",
+    steps: [
+      {
+        command: "myapp paths",
+        output: [
+          { text: "", type: "empty" },
+          { text: "  APP PATHS (myapp)", type: "muted" },
+          { text: "", type: "empty" },
+          { text: "  config:    ~/.config/myapp", type: "output" },
+          { text: "  state:     ~/.local/state/myapp", type: "output" },
+          { text: "  cache:     ~/.cache/myapp", type: "output" },
+          { text: "  audit:     ~/.local/state/myapp/audit", type: "output" },
+          { text: "  sessions:  ~/.config/myapp/sessions  (0700)", type: "accent" },
+          { text: "  tmp:       ~/.cache/myapp/tmp", type: "output" },
+        ],
+      },
+    ],
+  },
+  telemetry: {
+    title: "telemetry demo",
+    steps: [
+      {
+        command: "myapp telemetry status",
+        output: [
+          { text: "  Telemetry: enabled", type: "accent" },
+          { text: "  Events today: 12", type: "output" },
+          { text: "  Storage: ~/.cache/myapp/telemetry/", type: "muted" },
+        ],
+      },
+      {
+        command: "CLI_NO_TELEMETRY=1 myapp telemetry status",
+        output: [
+          { text: "  Telemetry: disabled", type: "muted" },
+          { text: "  Set CLI_NO_TELEMETRY=1 or DO_NOT_TRACK=1", type: "muted" },
+        ],
+      },
+    ],
+  },
 };

@@ -69,20 +69,20 @@ export const clusters = [
   {
     id: "state",
     label: "State done right",
-    kicker: "CLUSTER 2 // SOON",
+    kicker: "CLUSTER 2",
     description:
       "Respect XDG. Write atomically. Log append-only. The boring primitives every CLI reinvents badly. Done once, owned forever.",
     layer: "foundation",
-    accent: false,
+    accent: true,
   },
   {
     id: "safety",
     label: "Safety flagship",
-    kicker: "CLUSTER 4 // SOON",
+    kicker: "CLUSTER 4",
     description:
-      "Trust ladders. Killswitches. Audit trails. Intent tokens. The safety stack battle-tested in hapi-cli shipping real brokerage orders.",
+      "Killswitches. Audit trails. The safety stack battle-tested in hapi-cli shipping real brokerage orders. Trust ladders and intent tokens coming in v0.1.",
     layer: "safety",
-    accent: false,
+    accent: true,
   },
 ] as const;
 

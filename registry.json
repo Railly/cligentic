@@ -4,10 +4,24 @@
   "homepage": "https://cligentic.railly.dev",
   "items": [
     {
+      "name": "detect",
+      "type": "registry:file",
+      "title": "detect",
+      "description": "Environment detection helpers: isWsl, isCi, isWindows, isMac, isLinux, isHeadlessLinux, hasCommand, currentPlatform. Shared across platform blocks. Auto-installed as dependency.",
+      "files": [
+        {
+          "path": "registry/platform/detect.ts",
+          "type": "registry:file",
+          "target": "src/cli/platform/detect.ts"
+        }
+      ]
+    },
+    {
       "name": "open-url",
       "type": "registry:file",
       "title": "open-url",
       "description": "Open a URL in the user's default browser across macOS, Linux, Windows, WSL, SSH sessions, and headless CI. Fallback chain with BROWSER env override and manual print fallback.",
+      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/platform/open-url.ts",
@@ -52,6 +66,7 @@
       "type": "registry:file",
       "title": "copy-clipboard",
       "description": "Copy text to the system clipboard across macOS, Linux (X11 + Wayland), Windows, and WSL. Typed verdict, never throws. Detects pbcopy, xclip, xsel, wl-copy, clip.exe automatically.",
+      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/platform/copy-clipboard.ts",
@@ -65,6 +80,7 @@
       "type": "registry:file",
       "title": "notify-os",
       "description": "Fire a system notification across macOS (osascript), Linux (notify-send), Windows and WSL (PowerShell). Silently skips in CI. Typed verdict, never throws.",
+      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/platform/notify-os.ts",

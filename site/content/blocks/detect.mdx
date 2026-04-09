@@ -1,0 +1,61 @@
+## What it does
+
+`detect` is the shared detection layer that all platform blocks import from.
+Instead of each block copy-pasting `isWsl()`, `hasCommand()`, and `isCi()`,
+they all import from this single file. One fix, all blocks benefit.
+
+This block is auto-installed when you add any platform block (`open-url`,
+`copy-clipboard`, `notify-os`). You can also install it standalone.
+
+## API
+
+```ts
+import {
+  currentPlatform,   // "darwin" | "win32" | "wsl" | "linux" | "unknown"
+  isMac,             // process.platform === "darwin"
+  isWindows,         // process.platform === "win32"
+  isLinux,           // linux AND not WSL
+  isWsl,             // WSL1 or WSL2 (reads /proc/version, cached)
+  isCi,              // CI, GITHUB_ACTIONS, GITLAB_CI, etc.
+  isHeadlessLinux,   // no DISPLAY, no WAYLAND_DISPLAY, not WSL
+  hasCommand,        // checks if a binary exists in PATH (cross-OS)
+} from "@/cli/platform/detect";
+```
+
+## Why a separate block
+
+Three reasons:
+
+- **DRY**: `isWsl()` was copy-pasted across 3 blocks. One bug fix had to land in 3 places.
+- **Cache**: WSL detection reads `/proc/version`. The result is cached per-process. Without sharing, each block reads the file independently.
+- **Composable**: your own commands can import `detect` too. Need `isCi()` in your deploy guard? Import it. No need to reinvent the check.
+
+## `currentPlatform()` vs `process.platform`
+
+`process.platform` returns `"linux"` for both native Linux and WSL.
+`currentPlatform()` distinguishes WSL as its own value because the
+behavior difference (routing through Windows host binaries) is
+significant enough to warrant a distinct branch in CLI code.
+
+```ts
+const os = currentPlatform();
+// "darwin" | "win32" | "wsl" | "linux" | "unknown"
+
+if (os === "wsl") {
+  // route through cmd.exe or wslview
+}
+```
+
+## `hasCommand(cmd)`
+
+Walks `PATH`, checks `existsSync` for each candidate. On Windows,
+automatically appends `.exe`, `.cmd`, `.bat` extensions.
+
+```ts
+if (hasCommand("docker")) {
+  // docker is available
+}
+```
+
+Not cached, because `PATH` can theoretically change during process
+lifetime (rare but possible with dynamic env manipulation).

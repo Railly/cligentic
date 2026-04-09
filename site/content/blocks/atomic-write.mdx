@@ -1,0 +1,58 @@
+## The problem
+
+Your CLI writes config, session tokens, audit logs. If it crashes mid-write
+(or two terminals run concurrently), the file ends up corrupt or truncated.
+`writeFileSync` is not atomic.
+
+The `atomic-write` block writes to a temp file first, fsyncs to disk, then
+renames. The file either has the old content or the new content. Never partial.
+
+## Quickstart
+
+```ts
+import { atomicWrite, atomicWriteJson } from "@/cli/foundation/atomic-write";
+
+// Write a config file
+atomicWrite("~/.myapp/config.toml", tomlContent);
+
+// Write a session with restricted permissions
+atomicWriteJson("~/.myapp/sessions/current.json", session, { mode: 0o600 });
+```
+
+## How it works
+
+1. Create parent directories if missing
+2. Write to `{dir}/.{timestamp}.{random}.tmp`
+3. `fdatasync` to flush to disk (data hits platters, not just OS buffer)
+4. On Windows: `unlink` target first (`rename` doesn't overwrite on Windows)
+5. `rename` temp to target (atomic on POSIX)
+
+If the process crashes at any step before rename, the original file is untouched.
+The temp file is orphaned but harmless.
+
+## API
+
+```ts
+export function atomicWrite(
+  filePath: string,
+  content: string | Buffer,
+  options?: { mode?: number; encoding?: BufferEncoding },
+): void;
+
+export function atomicWriteJson(
+  filePath: string,
+  value: unknown,
+  options?: { mode?: number },
+): void;
+```
+
+`atomicWriteJson` serializes with 2-space indentation + trailing newline.
+The most common pattern for CLI config/session files.
+
+## When to use it
+
+- Config files (`config.toml`, `config.json`)
+- Session tokens (`sessions/current.json`, mode 0o600)
+- Killswitch file (`KILLSWITCH`)
+- Ledger entries (idempotency fingerprints)
+- Any file that two concurrent CLI invocations might race on

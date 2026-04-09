@@ -90,6 +90,45 @@
       ]
     },
     {
+      "name": "xdg-paths",
+      "type": "registry:file",
+      "title": "xdg-paths",
+      "description": "XDG Base Directory Spec resolver with macOS (Library) and Windows (AppData) fallbacks. Gives your CLI canonical config/state/cache/audit/sessions paths. APP_HOME env override for testing.",
+      "files": [
+        {
+          "path": "registry/foundation/xdg-paths.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/xdg-paths.ts"
+        }
+      ]
+    },
+    {
+      "name": "atomic-write",
+      "type": "registry:file",
+      "title": "atomic-write",
+      "description": "Write files atomically: temp file, fsync, rename. Prevents corruption from crashes or concurrent CLI processes. Windows-aware (unlink before rename). Includes atomicWriteJson convenience.",
+      "files": [
+        {
+          "path": "registry/foundation/atomic-write.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/atomic-write.ts"
+        }
+      ]
+    },
+    {
+      "name": "audit-log",
+      "type": "registry:file",
+      "title": "audit-log",
+      "description": "Append-only JSONL audit trail with per-day rotation. Every action gets a timestamped record. mode 0o600. Includes tailAudit for reading recent records. Battle-tested in hapi-cli and sunat-cli.",
+      "files": [
+        {
+          "path": "registry/foundation/audit-log.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/audit-log.ts"
+        }
+      ]
+    },
+    {
       "name": "killswitch",
       "type": "registry:file",
       "title": "killswitch",

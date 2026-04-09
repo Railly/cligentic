@@ -1,0 +1,80 @@
+## The problem
+
+An agent runs your CLI 50 times in a loop. Something goes wrong. You need
+to know what happened, in order, with timestamps. Without an audit trail,
+you're reading shell history and guessing.
+
+The `audit-log` block writes append-only JSONL records with per-day rotation.
+Every action your CLI takes gets a timestamped line.
+
+## Quickstart
+
+```ts
+import { audit, tailAudit } from "@/cli/foundation/audit-log";
+
+const AUDIT_DIR = "~/.myapp/audit";
+
+// Log an action
+audit(AUDIT_DIR, {
+  kind: "order.placed",
+  command: "order buy AAPL --qty 10",
+  result: "ok",
+  meta: { orderId: "abc-123", notional: 1500 },
+});
+
+// Read recent records
+const recent = tailAudit(AUDIT_DIR, 10);
+// [{ ts: "2026-04-09T...", kind: "order.placed", ... }, ...]
+```
+
+## What a record looks like
+
+```json
+{"ts":"2026-04-09T12:00:00.000Z","kind":"order.placed","command":"order buy AAPL","result":"ok","meta":{"orderId":"abc-123"}}
+```
+
+One line. One JSON object. Greppable, parseable, streamable.
+
+## File layout
+
+```
+~/.myapp/audit/
+  2026-04-07.jsonl    (auto-rotated by date)
+  2026-04-08.jsonl
+  2026-04-09.jsonl    (today)
+```
+
+Files are never overwritten or truncated. New records append to today's file.
+When the date changes, a new file starts automatically.
+
+## API
+
+```ts
+// Append one record (creates dir + file if needed)
+audit(auditDir: string, record: AuditRecord): void
+
+// Read last N records across files (newest first)
+tailAudit(auditDir: string, n?: number): StoredRecord[]
+
+// Count total records across all files
+countAuditRecords(auditDir: string): number
+```
+
+## The record type
+
+```ts
+export type AuditRecord = {
+  kind: string;           // "order.placed", "auth.login", "config.updated"
+  command: string;        // the full command string
+  result: "ok" | "error" | "blocked" | "dry-run";
+  meta?: Record<string, unknown>;
+  tier?: string;          // for safety-stack CLIs (T0-T5)
+  profile?: string;       // for multi-profile CLIs
+};
+```
+
+## Pair with other blocks
+
+- [`xdg-paths`](/blocks/xdg-paths) provides `paths.audit` as the canonical audit directory
+- [`killswitch`](/blocks/killswitch) logs a "blocked" result when the killswitch prevents an operation
+- [`json-mode`](/blocks/json-mode) for a `myapp audit tail --json` command that emits records to stdout

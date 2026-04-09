@@ -1,0 +1,50 @@
+## The problem
+
+Every CLI invents `~/.myapp/` from scratch. Some use `~/.config/myapp`,
+others use `~/Library/Application Support/myapp` on macOS, others just
+dump everything in `~/.myapp`. None of them respect `XDG_CONFIG_HOME`
+or handle Windows `%APPDATA%` correctly.
+
+The `xdg-paths` block resolves canonical directories following the XDG
+Base Directory Spec on Linux, with proper macOS and Windows fallbacks.
+
+## Quickstart
+
+```ts
+import { getAppPaths, ensureHome } from "@/cli/foundation/xdg-paths";
+
+const paths = getAppPaths("myapp");
+ensureHome(paths);
+
+// paths.config   = ~/.config/myapp          (Linux)
+// paths.state    = ~/.local/state/myapp     (Linux)
+// paths.cache    = ~/.cache/myapp           (Linux)
+// paths.audit    = ~/.local/state/myapp/audit
+// paths.sessions = ~/.config/myapp/sessions (mode 0o700)
+// paths.tmp      = ~/.cache/myapp/tmp
+```
+
+## Platform behavior
+
+- **Linux/WSL**: follows XDG spec. Respects `XDG_CONFIG_HOME`, `XDG_STATE_HOME`, `XDG_CACHE_HOME`.
+- **macOS**: `~/Library/Application Support/myapp` for config+state, `~/Library/Caches/myapp` for cache.
+- **Windows**: `%APPDATA%/myapp` for config, `%LOCALAPPDATA%/myapp` for state+cache.
+- **Override**: set `MYAPP_HOME` (app name uppercased, hyphens to underscores) to override all paths to a single root. Useful for testing and CI.
+
+## The paths
+
+| Path | Purpose | Linux default |
+|------|---------|---------------|
+| `config` | TOML/JSON config files | `~/.config/myapp` |
+| `state` | Sessions, pending, killswitch | `~/.local/state/myapp` |
+| `cache` | Temp data safe to delete | `~/.cache/myapp` |
+| `home` | Alias for config | `~/.config/myapp` |
+| `audit` | Audit log JSONL files | `~/.local/state/myapp/audit` |
+| `sessions` | Auth tokens (mode 0o700) | `~/.config/myapp/sessions` |
+| `tmp` | Temp files for atomic writes | `~/.cache/myapp/tmp` |
+
+## Pair with other blocks
+
+- [`atomic-write`](/blocks/atomic-write) uses `paths.tmp` for safe writes
+- [`audit-log`](/blocks/audit-log) uses `paths.audit` for the log directory
+- [`killswitch`](/blocks/killswitch) checks for a KILLSWITCH file in `paths.state`

@@ -48,6 +48,9 @@ const blockContent: Record<
   "copy-clipboard": () => import("../../../content/blocks/copy-clipboard.mdx"),
   "notify-os": () => import("../../../content/blocks/notify-os.mdx"),
   "killswitch": () => import("../../../content/blocks/killswitch.mdx"),
+  "xdg-paths": () => import("../../../content/blocks/xdg-paths.mdx"),
+  "atomic-write": () => import("../../../content/blocks/atomic-write.mdx"),
+  "audit-log": () => import("../../../content/blocks/audit-log.mdx"),
 };
 
 async function loadBlockContent(name: string) {

@@ -1,10 +1,36 @@
+<TerminalDemo
+  title="open-url demo"
+  steps={[
+    {
+      command: "myapp login",
+      output: [
+        { text: "  Opening browser for authentication...", type: "output" },
+        { text: "  Opened: https://auth.example.com/login?redirect=...", type: "accent" },
+        { text: "  Waiting for callback...", type: "muted" },
+        { text: "  Authenticated as hunter@railly.dev", type: "accent" },
+      ],
+    },
+    {
+      command: "myapp login  (over SSH, no browser)",
+      output: [
+        { text: "  No browser available (headless).", type: "muted" },
+        { text: "", type: "empty" },
+        { text: "  Open this URL in your browser to sign in:", type: "output" },
+        { text: "  https://auth.example.com/login?redirect=...", type: "accent" },
+        { text: "", type: "empty" },
+        { text: "  Waiting for callback...", type: "muted" },
+        { text: "  Authenticated as hunter@railly.dev", type: "accent" },
+      ],
+    },
+  ]}
+/>
+
 ## The problem
 
 Every CLI that does OAuth, opens docs, or launches a local server eventually
 needs to open a URL in the user's browser. Every CLI writes this badly.
 
 ```ts
-// What everyone writes the first time:
 const cmd =
   process.platform === "darwin"
     ? "open"
@@ -14,7 +40,7 @@ const cmd =
 spawn(cmd, [url]);
 ```
 
-This fails in at least five ways you won't notice until users report bugs:
+This fails in at least five ways:
 
 - **WSL** - `xdg-open` doesn't exist; you need `wslview` or `cmd.exe`
 - **SSH sessions** - no DISPLAY, `xdg-open` hangs or errors silently
@@ -37,50 +63,13 @@ if (!result.opened) {
 }
 ```
 
-That's it. No try/catch, no platform detection in your code, no fallback chain.
-
-## Usage in an OAuth flow
-
-The canonical scenario: your CLI starts a local callback server, opens the
-auth page in the user's browser, waits for the redirect.
-
-```ts
-import { openUrl } from "@/cli/platform/open-url";
-import { startCallbackServer } from "./auth/callback";
-
-export async function login() {
-  const { port, promise } = await startCallbackServer();
-  const authUrl = `https://auth.example.com?redirect=http://localhost:${port}`;
-
-  const result = await openUrl(authUrl);
-
-  if (!result.opened) {
-    // Headless, SSH, or CI - tell the user what to do
-    console.log("\nOpen this URL in your browser to sign in:\n");
-    console.log(`  ${result.url}\n`);
-  }
-
-  const token = await promise;
-  return token;
-}
-```
-
-The `!result.opened` branch is not a bug fallback. It's the **primary path**
-for CI and SSH. Treat it as a first-class UX, not an edge case.
-
 ## The fallback chain
-
-Internally, `openUrl` tries these in order:
 
 1. **`BROWSER` env var** - if set and not `"none"`, spawn whatever the user picked
 2. **Platform-specific opener** - `open` on macOS, `powershell Start-Process` on Windows
-3. **WSL detection** - reads `/proc/version` for "microsoft"; if found, routes through `wslview` → `cmd.exe /c start`
-4. **Linux chain** - `xdg-open` → `gio open` → `sensible-browser` → `firefox` → `google-chrome` → `chromium`
-5. **Headless detection** - no `DISPLAY`, no `WAYLAND_DISPLAY`, or `CI=1` → returns manual verdict
-
-If all opening paths fail, the block returns `{ opened: false, via: "manual", reason }`
-with a human-readable explanation. You log the URL, the user clicks it, life
-moves on.
+3. **WSL detection** - reads `/proc/version` for "microsoft"; routes through `wslview` or `cmd.exe /c start`
+4. **Linux chain** - `xdg-open`, `gio open`, `sensible-browser`, `firefox`, `google-chrome`, `chromium`
+5. **Headless detection** - no `DISPLAY`, no `WAYLAND_DISPLAY`, or `CI=1` - returns manual verdict
 
 ## Signature
 
@@ -92,34 +81,14 @@ export type OpenUrlResult = {
   reason?: string;
 };
 
-export type OpenUrlOptions = {
-  /** Never spawn - just return what would happen. For testing. */
-  dryRun?: boolean;
-  /** Force the manual fallback (print-only). */
-  manualOnly?: boolean;
-};
-
 export function openUrl(
   url: string,
-  options?: OpenUrlOptions,
+  options?: { dryRun?: boolean; manualOnly?: boolean },
 ): Promise<OpenUrlResult>;
 ```
 
 ## Never throws, never exits
 
-`openUrl` has one rule: **it returns a verdict, it never crashes your CLI**.
-That means:
-
-- Invalid URLs → spawn fails, returns `{ opened: false, via: "manual" }`
-- Missing binaries → chain continues to the next candidate
-- Headless env → short-circuits to manual before trying anything
-- CI env → treated as headless
-
-Your command handler always gets a typed result. You decide the UX.
-
-## Related
-
-- Pair with [`json-mode`](/blocks/json-mode) so your OAuth command can emit
-  structured success to stdout when `--json` is passed
-- Pair with [`next-steps`](/blocks/next-steps) to hint the next command
-  (e.g. `myapp whoami`) after a successful login
+`openUrl` returns a verdict, it never crashes your CLI.
+Invalid URLs, missing binaries, headless env, CI - all return
+`{ opened: false, via: "manual" }` with a human-readable reason.

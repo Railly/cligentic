@@ -1,3 +1,24 @@
+<TerminalDemo
+  title="copy-clipboard demo"
+  steps={[
+    {
+      command: "myapp token --copy",
+      output: [
+        { text: "  Token: sk_live_abc123...xyz", type: "output" },
+        { text: "  Copied to clipboard.", type: "accent" },
+      ],
+    },
+    {
+      command: "myapp token --copy  (over SSH)",
+      output: [
+        { text: "  Token: sk_live_abc123...xyz", type: "output" },
+        { text: "  Could not copy (no clipboard backend).", type: "muted" },
+        { text: "  Copy manually: sk_live_abc123def456xyz", type: "output" },
+      ],
+    },
+  ]}
+/>
+
 ## The problem
 
 Every CLI that copies output to the clipboard ends up with a `process.platform` switch

@@ -1,3 +1,32 @@
+<TerminalDemo
+  title="killswitch demo"
+  steps={[
+    {
+      command: "myapp order buy AAPL --qty 10",
+      output: [
+        { text: "  Placing order for 10x AAPL...", type: "output" },
+        { text: "  Order placed. ID: ord_abc123", type: "accent" },
+      ],
+    },
+    {
+      command: "myapp killswitch on --reason 'suspicious activity'",
+      output: [
+        { text: "  Killswitch activated.", type: "accent" },
+        { text: "  All write operations are now blocked.", type: "output" },
+      ],
+    },
+    {
+      command: "myapp order buy MSFT --qty 5",
+      output: [
+        { text: "  Error: Killswitch is ON since 2026-04-09T12:00:00Z", type: "accent" },
+        { text: "  Reason: suspicious activity", type: "output" },
+        { text: "  All write operations are blocked.", type: "muted" },
+        { text: "  Remove ~/.myapp/KILLSWITCH to resume.", type: "muted" },
+      ],
+    },
+  ]}
+/>
+
 ## The problem
 
 An agent running your CLI starts doing something wrong. Maybe the market
@@ -15,13 +44,11 @@ import { assertKillswitchOff, turnKillswitchOn } from "@/cli/safety/killswitch";
 
 const APP_HOME = join(homedir(), ".myapp");
 
-// Guard any write operation
 program.command("order").action(async (opts) => {
-  assertKillswitchOff(APP_HOME);  // throws if KILLSWITCH exists
+  assertKillswitchOff(APP_HOME);
   await placeOrder(opts);
 });
 
-// Emergency stop
 program.command("stop").action(() => {
   turnKillswitchOn(APP_HOME, "manual emergency stop");
   console.log("All writes blocked.");
@@ -31,18 +58,9 @@ program.command("stop").action(() => {
 ## How it works
 
 ```bash
-# Stop everything
-touch ~/.myapp/KILLSWITCH
-
-# Or with the CLI
-myapp stop
-
-# Check status
-cat ~/.myapp/KILLSWITCH
-# {"reason":"manual emergency stop","at":"2026-04-09T12:00:00.000Z"}
-
-# Resume
-rm ~/.myapp/KILLSWITCH
+touch ~/.myapp/KILLSWITCH             # stop everything
+cat ~/.myapp/KILLSWITCH               # see reason + timestamp
+rm ~/.myapp/KILLSWITCH                # resume
 ```
 
 One file. One `existsSync` call. No database. No network. No race conditions.
@@ -50,39 +68,25 @@ One file. One `existsSync` call. No database. No network. No race conditions.
 ## API
 
 ```ts
-// Check (fast, never throws)
-isKillswitchOn(appHome): boolean
-
-// Read state with reason + timestamp
-getKillswitchState(appHome): KillswitchState
-
-// Activate (idempotent, creates dir if needed)
-turnKillswitchOn(appHome, reason?): void
-
-// Deactivate (idempotent)
-turnKillswitchOff(appHome): void
-
-// Guard (throws if active)
-assertKillswitchOff(appHome): void
+isKillswitchOn(appHome): boolean          // fast, never throws
+getKillswitchState(appHome): KillswitchState  // includes reason + timestamp
+turnKillswitchOn(appHome, reason?): void  // idempotent
+turnKillswitchOff(appHome): void          // idempotent
+assertKillswitchOff(appHome): void        // throws if active
 ```
 
 ## Why file-based
 
 - **Atomic**: file exists or it doesn't. No partial states.
 - **Cross-process**: any terminal, any user, any script can create or remove it.
-- **Debuggable**: `cat` the file to see why it was triggered and when.
-- **Offline**: works without network, database, or any external service.
-- **Fast**: `existsSync` is < 1ms. No overhead per write operation.
+- **Debuggable**: `cat` the file to see why and when.
+- **Offline**: no network, no database.
+- **Fast**: `existsSync` is < 1ms.
 
 ## The safety stack
 
 `killswitch` is the simplest piece of cligentic's safety layer. For CLIs
-that need more granularity:
+that need more granularity, v0.1 will add trust-ladder, approvals,
+intent-token, and safety-middleware.
 
-- **`trust-ladder`** (v0.1): tiered authorization (T0 read-only through T5 destructive)
-- **`approvals`** (v0.1): file-based human-in-the-loop approval store
-- **`intent-token`** (v0.1): JWS tokens bound to operation fingerprints
-- **`safety-middleware`** (v0.1): composer that wires killswitch + trust-ladder + ledger + audit in the correct order
-
-The killswitch is always checked first. Before any other validation. If it's
-on, nothing else runs.
+The killswitch is always checked first. If it's on, nothing else runs.

@@ -1,3 +1,31 @@
+<TerminalDemo
+  title="myapp --help"
+  steps={[
+    {
+      command: "myapp --help",
+      output: [
+        { text: "", type: "empty" },
+        { text: "    █   █ █   █  █████ ████  ████", type: "accent" },
+        { text: "    ██ ██  █ █   █   █ █   █ █   █", type: "accent" },
+        { text: "    █ █ █   █    █████ ████  ████", type: "accent" },
+        { text: "    █   █   █    █   █ █     █", type: "accent" },
+        { text: "    █   █   █    █   █ █     █", type: "accent" },
+        { text: "", type: "empty" },
+        { text: "    v1.0.0  ·  Ship faster.", type: "muted" },
+        { text: "", type: "empty" },
+        { text: "  Commands:", type: "output" },
+        { text: "    deploy       push to production", type: "output" },
+        { text: "    status       check deploy status", type: "output" },
+        { text: "    rollback     revert last deploy", type: "output" },
+        { text: "", type: "empty" },
+        { text: "  Options:", type: "muted" },
+        { text: "    --json       emit JSON for agents", type: "muted" },
+        { text: "    --profile    config profile to use", type: "muted" },
+      ],
+    },
+  ]}
+/>
+
 ## What it does
 
 Prints a gradient ASCII wordmark when your CLI is invoked without args

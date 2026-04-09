@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { TerminalDemo } from "./app/components/terminal-demo";
 
 /**
  * MDX components — required file at the project root for Next 16's native
@@ -139,6 +140,9 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </td>
     ),
+
+    // Custom components available in all MDX files
+    TerminalDemo,
 
     ...components,
   };

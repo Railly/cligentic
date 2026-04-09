@@ -1,3 +1,34 @@
+<TerminalDemo
+  title="json-mode demo"
+  steps={[
+    {
+      command: "myapp list",
+      output: [
+        { text: "  Fetching items...", type: "muted" },
+        { text: "  - Apple (AAPL)", type: "output" },
+        { text: "  - Microsoft (MSFT)", type: "output" },
+        { text: "  - Google (GOOG)", type: "output" },
+      ],
+    },
+    {
+      command: "myapp list --json",
+      output: [
+        { text: '  {"id":"AAPL","name":"Apple","qty":10}', type: "output" },
+        { text: '  {"id":"MSFT","name":"Microsoft","qty":5}', type: "output" },
+        { text: '  {"id":"GOOG","name":"Google","qty":2}', type: "output" },
+      ],
+    },
+    {
+      command: "myapp list | jq '.name'",
+      output: [
+        { text: '  "Apple"', type: "accent" },
+        { text: '  "Microsoft"', type: "accent" },
+        { text: '  "Google"', type: "accent" },
+      ],
+    },
+  ]}
+/>
+
 ## The problem
 
 CLIs that serve both humans and agents need to render the same data two

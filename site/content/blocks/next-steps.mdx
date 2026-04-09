@@ -1,3 +1,27 @@
+<TerminalDemo
+  title="next-steps demo"
+  steps={[
+    {
+      command: "myapp deploy --json",
+      output: [
+        { text: '  {"version":"1.2.0","status":"deployed","url":"https://myapp.com"}', type: "output" },
+        { text: "", type: "empty" },
+        { text: '  {"type":"next-step","command":"myapp status","description":"check health"}', type: "accent" },
+        { text: '  {"type":"next-step","command":"myapp logs -f","description":"tail logs"}', type: "accent" },
+        { text: '  {"type":"next-step","command":"myapp rollback","description":"revert","optional":true}', type: "muted" },
+      ],
+    },
+    {
+      command: "myapp status",
+      output: [
+        { text: "  v1.2.0 running on 3/3 instances", type: "output" },
+        { text: "  Uptime: 2m 34s", type: "output" },
+        { text: "  Health: all green", type: "accent" },
+      ],
+    },
+  ]}
+/>
+
 ## The problem
 
 Agents operating CLIs have two jobs: read the output, decide the next
@@ -41,27 +65,9 @@ program.command("list").action(async (opts) => {
 });
 ```
 
-Running `myapp list --json` produces two independent streams:
-
-```
-STDOUT:
-[{"id":"AAPL","qty":10},{"id":"MSFT","qty":5},{"id":"GOOG","qty":2}]
-
-STDERR:
-{"type":"next-step","command":"myapp show <id>","description":"see details"}
-{"type":"next-step","command":"myapp quote <id>","description":"live price"}
-{"type":"next-step","command":"myapp export --format csv","description":"export all","optional":true}
-```
-
-In human mode (TTY), the same call renders a formatted block with arrow
-bullets after the main output. No branching in the author's code.
-
 ## The agent loop
 
-This is the pattern that makes `next-steps` worth installing:
-
 ```ts
-// In the agent (pseudocode)
 const { stdout, stderr } = await spawn("myapp", ["list", "--json"]);
 
 const data = JSON.parse(stdout);
@@ -72,27 +78,15 @@ const hints = stderr
   .map((line) => JSON.parse(line))
   .filter((obj) => obj.type === "next-step");
 
-// Agent now has both:
-//   data  = what happened
-//   hints = what to try next, with descriptions
-//
-// No system prompt needed. The CLI teaches itself.
 nextCommand(data, hints);
 ```
-
-The `type: "next-step"` discriminator lets agents filter next-step hints
-from other stderr content (logs, telemetry, future event types) without
-ambiguity.
 
 ## Signature
 
 ```ts
 export type NextStep = {
-  /** The literal command to run. Use `<id>` placeholders for params. */
   command: string;
-  /** A short (2-10 word) hint for why this step matters. */
   description: string;
-  /** If true, suggested but not required. Agents can skip. */
   optional?: boolean;
 };
 
@@ -100,38 +94,15 @@ export function emitNextSteps(
   steps: NextStep[],
   opts?: EmitOptions,
 ): void;
-
 ```
-
-## When to use it
-
-After every command that has a meaningful follow-up. The rule of thumb:
-
-- **`list`** → show, quote, export, filter
-- **`show`** → update, delete, list
-- **`create`** → show, list, next-required-step
-- **`login`** → whoami, first-run setup
-- **`error`** → doctor, logs, retry, contact support
-
-If your command has no follow-up, don't emit hints. Empty lists render nothing.
 
 ## The discipline rule
 
 `next-steps` writes to **stderr only**. Never stdout. This keeps stdout
-mono-typed as "the answer to this command" and stderr as "everything else
-the agent or human might care about."
-
-Breaking this rule - emitting hints to stdout - destroys the agent parse
-contract. Don't do it.
+mono-typed as "the answer to this command" and stderr as "everything else."
 
 ## Chained with json-mode
 
-This block declares `json-mode` as a registry dependency. Installing
-`next-steps` automatically pulls `json-mode` into your project. The two
-share `detectMode()` so mode detection stays consistent across both.
-
-```bash
-bunx shadcn@latest add https://cligentic.railly.dev/r/next-steps.json
-# → installs next-steps AND json-mode
-# → installs picocolors (declared dep, deduped)
-```
+Installing `next-steps` automatically pulls `json-mode` via registry
+dependencies. The two share `detectMode()` so mode detection stays
+consistent.

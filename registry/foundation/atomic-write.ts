@@ -27,7 +27,7 @@ import {
   writeSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import { isWindows } from "../platform/detect";
+import { currentPlatform } from "../platform/detect";
 
 export type WriteOptions = {
   /** File permissions. Default 0o644. Use 0o600 for secrets. */
@@ -68,7 +68,7 @@ export function atomicWrite(
   }
 
   // Windows rename() fails if target exists. Unlink first.
-  if (isWindows() && existsSync(filePath)) {
+  if (currentPlatform() === "win32" && existsSync(filePath)) {
     unlinkSync(filePath);
   }
 

@@ -29,10 +29,6 @@ export function currentPlatform(): Platform {
   return "unknown";
 }
 
-export function isWindows(): boolean {
-  return osPlatform() === "win32";
-}
-
 /**
  * Detects WSL (Windows Subsystem for Linux). Reads /proc/version once
  * and caches the result for the lifetime of the process.

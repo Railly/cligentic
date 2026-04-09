@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "cligentic",
+  "homepage": "https://cligentic.railly.dev",
+  "items": [
+    {
+      "name": "open-url",
+      "type": "registry:file",
+      "title": "open-url",
+      "description": "Open a URL in the user's default browser across macOS, Linux, Windows, WSL, SSH sessions, and headless CI. Fallback chain with BROWSER env override and manual print fallback.",
+      "files": [
+        {
+          "path": "registry/platform/open-url.ts",
+          "type": "registry:file",
+          "target": "src/cli/platform/open-url.ts"
+        }
+      ]
+    },
+    {
+      "name": "json-mode",
+      "type": "registry:file",
+      "title": "json-mode",
+      "description": "Dual-rendering output helpers for CLIs serving both humans and agents. Auto-detects TTY vs piped, enforces stdout/stderr discipline, respects NO_COLOR. Never calls process.exit.",
+      "dependencies": ["picocolors"],
+      "files": [
+        {
+          "path": "registry/agent/json-mode.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/json-mode.ts"
+        }
+      ],
+      "docs": "## Next steps\n\nImport and use in your command handlers:\n\n```ts\nimport { emit, note, reportError, detectMode } from './agent/json-mode';\n\nprogram\n  .option('--json', 'emit JSON for agents')\n  .command('list')\n  .action(async (opts) => {\n    note('Fetching items...', opts);\n    const items = await fetchItems();\n    emit(items, opts, (data) => {\n      for (const item of data) console.log(`- ${item.name}`);\n    });\n  });\n```\n\nIn JSON mode (`--json` or piped stdout): NDJSON to stdout, nothing to stderr.\nIn human mode (TTY): formatted output to stdout, notes to stderr.\n\nPairs with `next-steps` block for agent-first CLIs."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+node_modules/
+bun.lock
+bun.lockb
+dist/
+public/r/
+.DS_Store
+.env
+.env.local
+*.log
+.turbo/
+.next/
+prototype-consumer/node_modules/
+prototype-consumer/src/
+prototype-consumer/package.json
+prototype-consumer/bun.lockb
+prototype-consumer/components.json

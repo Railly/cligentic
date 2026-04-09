@@ -1,0 +1,22 @@
+# prototype-consumer
+
+This directory is a scratch space for testing `bunx shadcn add` against
+the local registry. It is gitignored except for this README.
+
+## Usage
+
+```bash
+# Terminal 1: build + serve
+cd ..
+bun scripts/build-registry.ts
+bun scripts/serve.ts
+
+# Terminal 2: simulate a real consumer
+cd prototype-consumer
+bun init -y
+echo '{"$schema":"https://ui.shadcn.com/schema.json","style":"default","rsc":false,"tsx":true,"tailwind":{"config":"","css":"","baseColor":"neutral","cssVariables":false},"aliases":{"components":"src/cli","utils":"src/cli/lib","lib":"src/cli/lib","hooks":"src/cli/hooks","ui":"src/cli/ui"}}' > components.json
+bunx shadcn@latest add http://localhost:4711/r/open-url.json
+
+# Expected:
+#   src/cli/platform/open-url.ts  (written)
+```

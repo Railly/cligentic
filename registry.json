@@ -46,6 +46,45 @@
         }
       ],
       "docs": "## Next steps\n\n```ts\nimport { emit } from './agent/json-mode';\nimport { emitNextSteps } from './agent/next-steps';\n\nprogram.command('list').action(async (opts) => {\n  const items = await fetchItems();\n  emit(items, opts);\n  emitNextSteps([\n    { command: 'myapp show <id>', description: 'see details for one item' },\n    { command: 'myapp export', description: 'export all', optional: true },\n  ], opts);\n});\n```\n\nAgents parse `stderr` line-by-line and filter `{type: 'next-step', ...}`\nobjects to know what to try next. Humans see a formatted block with\narrow bullets.\n\n**Note**: the registryDependency on json-mode uses a localhost URL for\ndev. In production it will point to https://cligentic.railly.dev/r/json-mode.json."
+    },
+    {
+      "name": "copy-clipboard",
+      "type": "registry:file",
+      "title": "copy-clipboard",
+      "description": "Copy text to the system clipboard across macOS, Linux (X11 + Wayland), Windows, and WSL. Typed verdict, never throws. Detects pbcopy, xclip, xsel, wl-copy, clip.exe automatically.",
+      "files": [
+        {
+          "path": "registry/platform/copy-clipboard.ts",
+          "type": "registry:file",
+          "target": "src/cli/platform/copy-clipboard.ts"
+        }
+      ]
+    },
+    {
+      "name": "notify-os",
+      "type": "registry:file",
+      "title": "notify-os",
+      "description": "Fire a system notification across macOS (osascript), Linux (notify-send), Windows and WSL (PowerShell). Silently skips in CI. Typed verdict, never throws.",
+      "files": [
+        {
+          "path": "registry/platform/notify-os.ts",
+          "type": "registry:file",
+          "target": "src/cli/platform/notify-os.ts"
+        }
+      ]
+    },
+    {
+      "name": "killswitch",
+      "type": "registry:file",
+      "title": "killswitch",
+      "description": "Binary safety gate. If ~/.app/KILLSWITCH exists, all write operations refuse. File exists = stopped. File gone = resumed. One fs.existsSync call. Battle-tested in hapi-cli for real brokerage orders.",
+      "files": [
+        {
+          "path": "registry/safety/killswitch.ts",
+          "type": "registry:file",
+          "target": "src/cli/safety/killswitch.ts"
+        }
+      ]
     }
   ]
 }

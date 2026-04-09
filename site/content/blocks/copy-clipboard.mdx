@@ -1,0 +1,55 @@
+## The problem
+
+Every CLI that copies output to the clipboard ends up with a `process.platform` switch
+and a `spawn` call that fails silently on half the platforms it claims to support.
+
+The `copy-clipboard` block detects the right clipboard backend automatically, handles
+WSL (routes to `clip.exe`), handles Wayland vs X11 on Linux, and returns a typed
+verdict instead of throwing.
+
+## Quickstart
+
+```ts
+import { copyToClipboard } from "@/cli/platform/copy-clipboard";
+
+const result = await copyToClipboard("https://cligentic.railly.dev");
+
+if (result.copied) {
+  console.log("Copied to clipboard.");
+} else {
+  console.log("Copy this manually:", text);
+}
+```
+
+## Backend detection order
+
+- **macOS**: `pbcopy` (always present)
+- **Windows**: `powershell Set-Clipboard`
+- **WSL**: `clip.exe` (routes to Windows host clipboard)
+- **Linux Wayland**: `wl-copy` (if `WAYLAND_DISPLAY` is set)
+- **Linux X11**: `xclip -selection clipboard`, then `xsel --clipboard --input` (if `DISPLAY` is set)
+- **Fallback**: returns `{ copied: false, via: "manual" }` with reason
+
+## Signature
+
+```ts
+export type CopyResult = {
+  copied: boolean;
+  via: "pbcopy" | "xclip" | "xsel" | "wl-copy" | "clip.exe" | "powershell" | "manual";
+  reason?: string;
+};
+
+export type CopyOptions = {
+  dryRun?: boolean;
+};
+
+export function copyToClipboard(
+  text: string,
+  options?: CopyOptions,
+): Promise<CopyResult>;
+```
+
+## Pair with other blocks
+
+- Use after [`json-mode`](/blocks/json-mode)'s `emit()` to copy the result to clipboard
+- Use with [`notify-os`](/blocks/notify-os) to fire a "Copied!" notification after clipboard write

@@ -1,0 +1,88 @@
+## The problem
+
+An agent running your CLI starts doing something wrong. Maybe the market
+tanked and your trading bot is still buying. Maybe a deploy script is
+pushing to production when it shouldn't. You need to stop everything. Now.
+
+The `killswitch` block is a binary safety gate. If a file exists at
+`~/.yourapp/KILLSWITCH`, every write operation refuses to execute. Remove
+the file, operations resume. One `touch` command stops the world.
+
+## Quickstart
+
+```ts
+import { assertKillswitchOff, turnKillswitchOn } from "@/cli/safety/killswitch";
+
+const APP_HOME = join(homedir(), ".myapp");
+
+// Guard any write operation
+program.command("order").action(async (opts) => {
+  assertKillswitchOff(APP_HOME);  // throws if KILLSWITCH exists
+  await placeOrder(opts);
+});
+
+// Emergency stop
+program.command("stop").action(() => {
+  turnKillswitchOn(APP_HOME, "manual emergency stop");
+  console.log("All writes blocked.");
+});
+```
+
+## How it works
+
+```bash
+# Stop everything
+touch ~/.myapp/KILLSWITCH
+
+# Or with the CLI
+myapp stop
+
+# Check status
+cat ~/.myapp/KILLSWITCH
+# {"reason":"manual emergency stop","at":"2026-04-09T12:00:00.000Z"}
+
+# Resume
+rm ~/.myapp/KILLSWITCH
+```
+
+One file. One `existsSync` call. No database. No network. No race conditions.
+
+## API
+
+```ts
+// Check (fast, never throws)
+isKillswitchOn(appHome): boolean
+
+// Read state with reason + timestamp
+getKillswitchState(appHome): KillswitchState
+
+// Activate (idempotent, creates dir if needed)
+turnKillswitchOn(appHome, reason?): void
+
+// Deactivate (idempotent)
+turnKillswitchOff(appHome): void
+
+// Guard (throws if active)
+assertKillswitchOff(appHome): void
+```
+
+## Why file-based
+
+- **Atomic**: file exists or it doesn't. No partial states.
+- **Cross-process**: any terminal, any user, any script can create or remove it.
+- **Debuggable**: `cat` the file to see why it was triggered and when.
+- **Offline**: works without network, database, or any external service.
+- **Fast**: `existsSync` is < 1ms. No overhead per write operation.
+
+## The safety stack
+
+`killswitch` is the simplest piece of cligentic's safety layer. For CLIs
+that need more granularity:
+
+- **`trust-ladder`** (v0.1): tiered authorization (T0 read-only through T5 destructive)
+- **`approvals`** (v0.1): file-based human-in-the-loop approval store
+- **`intent-token`** (v0.1): JWS tokens bound to operation fingerprints
+- **`safety-middleware`** (v0.1): composer that wires killswitch + trust-ladder + ledger + audit in the correct order
+
+The killswitch is always checked first. Before any other validation. If it's
+on, nothing else runs.

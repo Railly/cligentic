@@ -44,6 +44,9 @@ const blockContent: Record<
   "open-url": () => import("../../../content/blocks/open-url.mdx"),
   "json-mode": () => import("../../../content/blocks/json-mode.mdx"),
   "next-steps": () => import("../../../content/blocks/next-steps.mdx"),
+  "copy-clipboard": () => import("../../../content/blocks/copy-clipboard.mdx"),
+  "notify-os": () => import("../../../content/blocks/notify-os.mdx"),
+  "killswitch": () => import("../../../content/blocks/killswitch.mdx"),
 };
 
 async function loadBlockContent(name: string) {

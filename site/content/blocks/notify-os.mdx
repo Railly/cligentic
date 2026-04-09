@@ -1,0 +1,70 @@
+## The problem
+
+Long-running CLI operations complete while the user's focus is elsewhere.
+Without a system notification, the user has to poll the terminal or hope
+they notice the cursor changed.
+
+The `notify-os` block fires a system notification on macOS, Linux, Windows,
+and WSL. In CI environments, it silently skips (not an error). Returns a
+typed verdict.
+
+## Quickstart
+
+```ts
+import { notifyOs } from "@/cli/platform/notify-os";
+
+await longBuildProcess();
+
+const result = await notifyOs("Build complete", "myapp v1.2.0 is ready.");
+
+if (!result.sent) {
+  console.log("Build complete: myapp v1.2.0 is ready.");
+}
+```
+
+## Backend detection
+
+- **macOS**: `osascript -e 'display notification ...'` with optional sound
+- **Windows / WSL**: PowerShell `NotifyIcon.ShowBalloonTip`
+- **Linux**: `notify-send` (libnotify, present on most desktop distros)
+- **CI / headless**: silently skipped, `{ sent: false, via: "skipped" }`
+
+## Options
+
+```ts
+export type NotifyOptions = {
+  dryRun?: boolean;
+  /** App name shown in the notification. Defaults to "CLI". */
+  appName?: string;
+  /** Sound on macOS. Set false to suppress. */
+  sound?: boolean;
+};
+```
+
+## Signature
+
+```ts
+export function notifyOs(
+  title: string,
+  message: string,
+  options?: NotifyOptions,
+): Promise<NotifyResult>;
+```
+
+## Real-world pattern
+
+Pair with long operations to close the feedback loop:
+
+```ts
+import { notifyOs } from "@/cli/platform/notify-os";
+import { emit } from "@/cli/agent/json-mode";
+
+program.command("deploy").action(async (opts) => {
+  const result = await deployToProduction();
+  emit(result, opts);
+  await notifyOs("Deploy done", `${result.version} is live.`);
+});
+```
+
+The notification fires for humans. Agents reading `--json` output don't
+need it because they already parsed the result from stdout.

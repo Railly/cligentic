@@ -30,6 +30,22 @@
         }
       ],
       "docs": "## Next steps\n\nImport and use in your command handlers:\n\n```ts\nimport { emit, note, reportError, detectMode } from './agent/json-mode';\n\nprogram\n  .option('--json', 'emit JSON for agents')\n  .command('list')\n  .action(async (opts) => {\n    note('Fetching items...', opts);\n    const items = await fetchItems();\n    emit(items, opts, (data) => {\n      for (const item of data) console.log(`- ${item.name}`);\n    });\n  });\n```\n\nIn JSON mode (`--json` or piped stdout): NDJSON to stdout, nothing to stderr.\nIn human mode (TTY): formatted output to stdout, notes to stderr.\n\nPairs with `next-steps` block for agent-first CLIs."
+    },
+    {
+      "name": "next-steps",
+      "type": "registry:file",
+      "title": "next-steps",
+      "description": "Post-command guidance for agents and humans. Emit structured next-step hints to stderr (NDJSON for agents, formatted block for humans). Chains with json-mode.",
+      "dependencies": ["picocolors"],
+      "registryDependencies": ["http://localhost:4711/r/json-mode.json"],
+      "files": [
+        {
+          "path": "registry/agent/next-steps.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/next-steps.ts"
+        }
+      ],
+      "docs": "## Next steps\n\n```ts\nimport { emit } from './agent/json-mode';\nimport { emitNextSteps } from './agent/next-steps';\n\nprogram.command('list').action(async (opts) => {\n  const items = await fetchItems();\n  emit(items, opts);\n  emitNextSteps([\n    { command: 'myapp show <id>', description: 'see details for one item' },\n    { command: 'myapp export', description: 'export all', optional: true },\n  ], opts);\n});\n```\n\nAgents parse `stderr` line-by-line and filter `{type: 'next-step', ...}`\nobjects to know what to try next. Humans see a formatted block with\narrow bullets.\n\n**Note**: the registryDependency on json-mode uses a localhost URL for\ndev. In production it will point to https://cligentic.railly.dev/r/json-mode.json."
     }
   ]
 }

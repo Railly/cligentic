@@ -23,8 +23,9 @@
 //   ensureHome(paths);  // creates all directories
 
 import { mkdirSync } from "node:fs";
-import { homedir, platform } from "node:os";
+import { homedir } from "node:os";
 import { join } from "node:path";
+import { currentPlatform } from "../platform/detect";
 
 export type AppPaths = {
   /** Primary config directory. TOML/JSON config files live here. */
@@ -61,7 +62,7 @@ export function getAppPaths(appName: string): AppPaths {
     return buildPaths(override);
   }
 
-  const os = platform();
+  const os = currentPlatform();
   const home = homedir();
 
   if (os === "darwin") {
@@ -77,7 +78,7 @@ export function getAppPaths(appName: string): AppPaths {
     };
   }
 
-  if (os === "win32") {
+  if (os === "win32" || os === "unknown") {
     const appData = process.env.APPDATA || join(home, "AppData", "Roaming");
     const localAppData = process.env.LOCALAPPDATA || join(home, "AppData", "Local");
     const configDir = join(appData, appName);

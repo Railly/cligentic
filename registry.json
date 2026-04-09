@@ -36,6 +36,7 @@
       "title": "json-mode",
       "description": "Dual-rendering output helpers for CLIs serving both humans and agents. Auto-detects TTY vs piped, enforces stdout/stderr discipline, respects NO_COLOR. Never calls process.exit.",
       "dependencies": ["picocolors"],
+      "registryDependencies": ["http://localhost:4711/r/detect.json"],
       "files": [
         {
           "path": "registry/agent/json-mode.ts",

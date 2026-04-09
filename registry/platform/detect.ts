@@ -102,3 +102,35 @@ export function hasCommand(cmd: string): boolean {
   }
   return false;
 }
+
+// --- Output mode detection (shared by json-mode + next-steps) ---
+
+export type OutputMode = "human" | "json";
+
+export type EmitOptions = {
+  json?: boolean;
+  quiet?: boolean;
+};
+
+/**
+ * Detects whether the CLI should emit structured JSON or human-readable
+ * output. Used by json-mode's emit() and next-steps' emitNextSteps().
+ *
+ * Precedence: explicit --json flag > NO_JSON env > TTY detection > default human.
+ */
+export function detectMode(opts: EmitOptions = {}): OutputMode {
+  if (opts.json === true) return "json";
+  if (process.env.NO_JSON === "1") return "human";
+  if (!process.stdout.isTTY) return "json";
+  return "human";
+}
+
+/**
+ * Detects whether colors should be used. Respects NO_COLOR
+ * (https://no-color.org) and FORCE_COLOR env vars.
+ */
+export function shouldColor(): boolean {
+  if (process.env.NO_COLOR) return false;
+  if (process.env.FORCE_COLOR) return true;
+  return Boolean(process.stdout.isTTY);
+}

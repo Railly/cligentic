@@ -3,87 +3,37 @@
 // Dual-rendering output helpers for CLIs that serve both humans and agents.
 //
 // Design rules:
-//   1. stdout is data — the primary signal agents consume. Only structured
-//      JSON goes here in --json mode. In human mode, formatted output.
-//   2. stderr is logs — notes, progress, errors. Never parsed by the agent
-//      as data (but may be parsed as next-step hints — see next-steps block).
-//   3. Mode detection is implicit. If stdout is piped (not TTY), auto-switch
-//      to JSON. If --json flag is set, force JSON regardless. If NO_COLOR is
-//      set, suppress colors in human mode.
-//   4. Never call process.exit(). The author decides when to exit.
-//   5. One call site, two outputs. `emit(value, opts, humanRender?)` is the
-//      single entry point — it decides which path to take based on opts.
+//   1. stdout is data. Only structured JSON in --json mode, formatted in human.
+//   2. stderr is logs. Notes, progress, errors.
+//   3. Mode detection is implicit. Piped stdout auto-switches to JSON.
+//   4. Never call process.exit().
+//   5. One call site: emit(value, opts, humanRender?).
 //
 // Usage:
 //   import { detectMode, emit, note, reportError } from "./agent/json-mode";
 //
 //   program.option("--json", "emit JSON for agents");
-//
 //   program.command("list").action(async (opts) => {
 //     const items = await fetchItems();
 //     emit(items, opts, (data) => {
-//       for (const item of data) {
-//         console.log(`- ${item.name} (${item.id})`);
-//       }
+//       for (const item of data) console.log(`- ${item.name}`);
 //     });
 //   });
-//
-//   // In json mode: stdout gets `[{"name":"foo","id":1},...]`
-//   // In human mode: stdout gets the bulleted list
-//   // Either way, errors go to stderr, never mixed with data.
-//
-// Depends on:
-//   - picocolors (for human-mode coloring)
 
 import pc from "picocolors";
+import {
+  type EmitOptions,
+  type OutputMode,
+  detectMode,
+  shouldColor,
+} from "../platform/detect";
 
-export type Mode = "human" | "json";
-
-export type EmitOptions = {
-  /** Set when --json flag is present on the command. */
-  json?: boolean;
-  /** Set when --quiet flag is present — suppresses notes in human mode. */
-  quiet?: boolean;
-};
-
-/**
- * Detects whether the current invocation should emit structured JSON
- * or human-readable output.
- *
- * Precedence (highest wins):
- *   1. Explicit --json flag → "json"
- *   2. stdout is not a TTY (piped / redirected) → "json"
- *   3. NO_JSON env var → force "human"
- *   4. Default → "human"
- */
-export function detectMode(opts: EmitOptions = {}): Mode {
-  if (opts.json === true) return "json";
-  if (process.env.NO_JSON === "1") return "human";
-  if (!process.stdout.isTTY) return "json";
-  return "human";
-}
+// Re-export so consumers can import everything from json-mode
+export { type EmitOptions, type OutputMode as Mode, detectMode, shouldColor };
 
 /**
- * Detects whether colors should be used in human-mode output.
- * Respects NO_COLOR (https://no-color.org) and FORCE_COLOR env vars.
- */
-export function shouldColor(): boolean {
-  if (process.env.NO_COLOR) return false;
-  if (process.env.FORCE_COLOR) return true;
-  return Boolean(process.stdout.isTTY);
-}
-
-/**
- * Emits a value to stdout. In json mode, stringifies as JSON. In human mode,
- * calls the provided humanRender callback, or falls back to JSON.stringify
- * with indentation.
- *
- * Rules:
- *   - stdout only. Never stderr.
- *   - Arrays in json mode emit as NDJSON (one object per line) so agents
- *     can stream-parse. Objects emit as single JSON lines.
- *   - humanRender is only called in human mode. It should console.log
- *     directly — emit does not capture its output.
+ * Emits a value to stdout. JSON in json mode, humanRender callback in human.
+ * Arrays emit as NDJSON (one object per line) for agent stream-parsing.
  */
 export function emit<T>(value: T, opts: EmitOptions = {}, humanRender?: (value: T) => void): void {
   const mode = detectMode(opts);
@@ -99,20 +49,16 @@ export function emit<T>(value: T, opts: EmitOptions = {}, humanRender?: (value: 
     return;
   }
 
-  // Human mode.
   if (humanRender) {
     humanRender(value);
     return;
   }
 
-  // Fallback: pretty-printed JSON to stdout.
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
 /**
- * Writes a note to stderr. Notes are human guidance — "fetching...",
- * "using profile X", etc. In json mode, notes are suppressed entirely
- * (stderr stays clean for next-steps NDJSON). In quiet mode, also suppressed.
+ * Writes a note to stderr. Suppressed in json mode and quiet mode.
  */
 export function note(message: string, opts: EmitOptions = {}): void {
   if (opts.json === true) return;
@@ -124,8 +70,7 @@ export function note(message: string, opts: EmitOptions = {}): void {
 }
 
 /**
- * Writes a success message to stderr (in human mode) or emits a structured
- * success object to stdout (in json mode).
+ * Writes a success message. JSON to stdout in json mode, colored to stderr in human.
  */
 export function emitSuccess(message: string, opts: EmitOptions = {}): void {
   const mode = detectMode(opts);
@@ -138,13 +83,8 @@ export function emitSuccess(message: string, opts: EmitOptions = {}): void {
 }
 
 /**
- * Reports an error. In json mode: structured error object to stdout (so
- * agents can parse it). In human mode: colored message to stderr.
- *
- * Does NOT call process.exit() — the caller decides whether to exit and
- * with what code. This block only handles rendering.
- *
- * Returns the structured error payload so callers can inspect / re-emit.
+ * Reports an error without exiting. JSON to stdout in json mode, colored
+ * to stderr in human. Returns the structured payload for caller inspection.
  */
 export function reportError(
   error: string | Error,

@@ -9,6 +9,7 @@ import { Footer } from "../../components/footer";
 import { Header } from "../../components/header";
 import { TerminalDemo } from "../../components/terminal-demo";
 import { blockDemos } from "../../lib/block-demos";
+import { parseInlineCode } from "../../lib/inline-code";
 import { getInstallCommand, registry } from "../../lib/registry";
 
 type Props = {
@@ -118,7 +119,7 @@ export default async function BlockDetailPage({ params }: Props) {
         </h1>
 
         <p className="mb-10 max-w-2xl text-base leading-relaxed text-[color:var(--color-fg-muted)]">
-          {item.description}
+          {parseInlineCode(item.description ?? "")}
         </p>
 
         {/* Install command */}

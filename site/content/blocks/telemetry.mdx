@@ -1,0 +1,72 @@
+## What it does
+
+Anonymous usage tracking for your CLI. Tracks which commands users run,
+how long they take, and whether they succeed or fail. No PII. Opt-out
+via environment variable.
+
+## Privacy first
+
+Telemetry is **disabled** when any of these are true:
+
+- `CLI_NO_TELEMETRY=1` (your app's opt-out)
+- `DO_NOT_TRACK=1` ([consoledonottrack.com](https://consoledonottrack.com))
+- Any CI environment (`CI=true`, `GITHUB_ACTIONS`, etc)
+
+What's collected: event name, command, duration, result, timestamp, and
+a random session ID (generated per process, not per user). No IP, no
+machine ID, no user identity.
+
+## Quickstart
+
+```ts
+import { getAppPaths } from "@/cli/foundation/xdg-paths";
+import { trackEvent, isTelemetryEnabled } from "@/cli/foundation/telemetry";
+
+const paths = getAppPaths("myapp");
+
+program.command("deploy").action(async (opts) => {
+  const start = Date.now();
+  try {
+    await deploy();
+    trackEvent(paths.cache, {
+      event: "command.run",
+      command: "deploy",
+      durationMs: Date.now() - start,
+      result: "ok",
+    });
+  } catch (err) {
+    trackEvent(paths.cache, {
+      event: "command.run",
+      command: "deploy",
+      durationMs: Date.now() - start,
+      result: "error",
+    });
+    throw err;
+  }
+});
+```
+
+## Two modes
+
+**Local-only** (default): appends events to `{telemetryDir}/YYYY-MM-DD.jsonl`.
+You analyze the data yourself with `cat` + `jq`.
+
+**Remote**: set an `endpoint` in the config and events also POST to your
+analytics server. Fire-and-forget with a 3s timeout. Never blocks the CLI.
+
+```ts
+trackEvent(dir, event, {
+  endpoint: "https://analytics.myapp.com/events",
+  timeout: 3000,
+});
+```
+
+## API
+
+```ts
+isTelemetryEnabled(): boolean
+trackEvent(telemetryDir, event, config?): void
+```
+
+`trackEvent` never throws. If the local write fails or the remote POST
+times out, the CLI continues normally. Telemetry never breaks the tool.

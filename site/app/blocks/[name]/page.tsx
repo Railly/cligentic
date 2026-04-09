@@ -53,6 +53,7 @@ const blockContent: Record<
   "session": () => import("../../../content/blocks/session.mdx"),
   "error-map": () => import("../../../content/blocks/error-map.mdx"),
   "global-flags": () => import("../../../content/blocks/global-flags.mdx"),
+  "telemetry": () => import("../../../content/blocks/telemetry.mdx"),
   "xdg-paths": () => import("../../../content/blocks/xdg-paths.mdx"),
   "atomic-write": () => import("../../../content/blocks/atomic-write.mdx"),
   "audit-log": () => import("../../../content/blocks/audit-log.mdx"),

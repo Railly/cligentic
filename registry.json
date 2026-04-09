@@ -198,6 +198,19 @@
       ]
     },
     {
+      "name": "telemetry",
+      "type": "registry:file",
+      "title": "telemetry",
+      "description": "Anonymous usage tracking. Opt-out via CLI_NO_TELEMETRY=1 or DO_NOT_TRACK=1. Local JSONL logging + optional remote POST. Never throws, never blocks. Disabled in CI automatically.",
+      "files": [
+        {
+          "path": "registry/foundation/telemetry.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/telemetry.ts"
+        }
+      ]
+    },
+    {
       "name": "killswitch",
       "type": "registry:file",
       "title": "killswitch",

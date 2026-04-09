@@ -121,20 +121,20 @@ export default async function BlockDetailPage({ params }: Props) {
           {item.description}
         </p>
 
-        {/* Animated terminal demo */}
-        {demo && (
-          <div className="mb-12">
-            <TerminalDemo steps={demo.steps} title={demo.title} />
-          </div>
-        )}
-
         {/* Install command */}
-        <div className="mb-14 max-w-full">
+        <div className="mb-12 max-w-full">
           <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-[color:var(--color-fg-dim)]">
             Install
           </div>
           <CopyCommand command={installCmd} variant="inline" />
         </div>
+
+        {/* Animated terminal demo */}
+        {demo && (
+          <div className="mb-14">
+            <TerminalDemo steps={demo.steps} title={demo.title} />
+          </div>
+        )}
 
         {/* Meta grid — npm deps + block deps + size */}
         <div className="mb-14 grid gap-10 border-y border-[color:var(--color-bg-border)] py-8 md:grid-cols-3">

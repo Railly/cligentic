@@ -5,32 +5,20 @@ import { getHeroInstallCommand } from "../lib/registry";
 
 const HERO_STEPS: DemoStep[] = [
   {
-    command: "bunx shadcn add cligentic.railly.dev/r/banner.json",
-    output: [
-      { text: "  Checking registry...", type: "muted" },
-      { text: "  Created 1 file:", type: "output" },
-      { text: "    cli/foundation/banner.ts", type: "accent" },
-      { text: "", type: "empty" },
-    ],
-  },
-  {
     command: "bunx shadcn add cligentic.railly.dev/r/json-mode.json",
     output: [
-      { text: "  Checking registry...", type: "muted" },
       { text: "  Installed dep: picocolors", type: "output" },
       { text: "  Created 2 files:", type: "output" },
       { text: "    cli/platform/detect.ts", type: "accent" },
       { text: "    cli/agent/json-mode.ts", type: "accent" },
-      { text: "", type: "empty" },
     ],
   },
   {
-    command: "bun run src/index.ts list --json",
+    command: "myapp list --json",
     output: [
-      { text: '  {"found":3,"items":[{"id":"AAPL"},{"id":"MSFT"},{"id":"GOOG"}]}', type: "output" },
-      { text: "", type: "empty" },
-      { text: '  {"type":"next-step","command":"show AAPL","description":"details"}', type: "muted" },
-      { text: '  {"type":"next-step","command":"export","description":"csv"}', type: "muted" },
+      { text: '  {"id":"AAPL","qty":10}', type: "output" },
+      { text: '  {"id":"MSFT","qty":5}', type: "output" },
+      { text: '  {"type":"next-step","command":"show AAPL"}', type: "accent" },
     ],
   },
 ];
@@ -39,28 +27,28 @@ export function Hero() {
   const installCmd = getHeroInstallCommand();
 
   return (
-    <div className="relative min-h-[92vh] overflow-hidden">
+    <div className="relative overflow-hidden">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-grid opacity-40"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-0 left-0 h-[500px] w-[500px] -translate-x-1/2 translate-y-1/4 rounded-full bg-[color:var(--color-accent-glow)] blur-[120px]"
+        className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] -translate-x-1/2 translate-y-1/4 rounded-full bg-[color:var(--color-accent-glow)] blur-[120px]"
       />
 
-      <div className="relative z-10 flex min-h-[92vh] flex-col">
+      <div className="relative z-10 flex min-h-svh flex-col">
         <Header />
 
-        <div className="flex flex-1 items-center px-10 pb-14 md:px-16 md:pb-20">
-          <div className="grid w-full items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="flex flex-1 items-center px-10 py-10 md:px-16 md:py-14">
+          <div className="grid w-full items-center gap-10 lg:grid-cols-2 lg:gap-14">
             {/* Left: headline + CTA */}
             <div>
               <h1 className="hero-display max-w-[16ch] text-balance text-[color:var(--color-fg)]">
                 Your CLI is the last thing agents touch.
               </h1>
 
-              <p className="mt-8 max-w-xl text-[15px] leading-relaxed text-[color:var(--color-fg-muted)] md:text-base">
+              <p className="mt-5 max-w-xl text-[14px] leading-relaxed text-[color:var(--color-fg-muted)] md:text-[15px]">
                 Copy-paste CLI blocks for the agent era.{" "}
                 <span className="text-[color:var(--color-fg)]">
                   Trust ladders, killswitches,{" "}
@@ -70,7 +58,7 @@ export function Hero() {
                 Battle-tested in CLIs shipping real money and real taxes.
               </p>
 
-              <div className="mt-10 flex flex-wrap items-center gap-4">
+              <div className="mt-7 flex flex-wrap items-center gap-4">
                 <CopyCommand command={installCmd} variant="hero" />
                 <a
                   href="#how-it-works"
@@ -80,7 +68,7 @@ export function Hero() {
                 </a>
               </div>
 
-              <p className="mt-6 font-mono text-[11px] text-[color:var(--color-fg-dim)]">
+              <p className="mt-4 font-mono text-[11px] text-[color:var(--color-fg-dim)]">
                 Installs{" "}
                 <span className="text-[color:var(--color-fg-muted)]">
                   next-steps

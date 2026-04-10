@@ -79,8 +79,8 @@
 
   /* Hero display type — tight tracking, tight leading */
   .hero-display {
-    font-size: clamp(48px, 10vw, 128px);
-    line-height: 1.02;
+    font-size: clamp(36px, 6vw, 80px);
+    line-height: 1.05;
     letter-spacing: -0.035em;
     font-weight: 700;
   }

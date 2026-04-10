@@ -136,7 +136,7 @@ export function TerminalDemo({ steps, title = "terminal", className = "" }: Prop
 
         <div
           ref={scrollRef}
-          className="h-[360px] overflow-y-auto bg-[color:var(--color-bg)] p-5 font-mono text-[13px]"
+          className="max-h-[320px] overflow-y-auto bg-[color:var(--color-bg)] p-5 font-mono text-[13px]"
         >
           {lines.map((line, i) => {
             const key = `${i}-${line.kind}`;

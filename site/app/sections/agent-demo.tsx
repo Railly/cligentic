@@ -42,8 +42,8 @@ export function AgentDemo() {
     <Section
       id="agent-demo"
       kicker="The flagship"
-      title="stdout is data. stderr is guidance. Agents read both."
-      description="json-mode and next-steps work together to split a command's output into two streams. Agents parse stdout as JSON (the answer) and stderr as NDJSON next-step hints (what to try next). No system prompt needed. The CLI teaches itself."
+      title="stdout is data. stderr is guidance."
+      description="Agents parse JSON from stdout and next-step hints from stderr. No system prompt needed."
     >
       <div className="mx-auto max-w-3xl">
         <TerminalDemo

@@ -53,7 +53,7 @@ export const clusters = [
     label: "Cross-OS without tears",
     kicker: "CLUSTER 1",
     description:
-      "Stop writing `process.platform === 'darwin'`. Open URLs, copy to clipboard, fire OS notifications on macOS, Linux, Windows, WSL, SSH, and headless CI. Typed verdicts, never throws.",
+      "Open URLs, copy to clipboard, fire notifications. macOS, Linux, Windows, WSL, SSH, CI. Never throws.",
     layer: "platform",
     accent: true,
   },
@@ -62,7 +62,7 @@ export const clusters = [
     label: "Agent-ready output",
     kicker: "CLUSTER 3",
     description:
-      "stdout for data, stderr for hints. `--json` dual mode in 30 lines. Next-step hints agents actually follow. The loop that lets Claude operate a CLI it's never seen.",
+      "`--json` dual mode. Next-step hints on stderr. The loop that lets agents operate CLIs.",
     layer: "agent",
     accent: true,
   },
@@ -71,7 +71,7 @@ export const clusters = [
     label: "State done right",
     kicker: "CLUSTER 2",
     description:
-      "Respect XDG. Write atomically. Log append-only. The boring primitives every CLI reinvents badly. Done once, owned forever.",
+      "XDG paths. Atomic writes. Append-only audit logs. Config with profiles. Session tokens.",
     layer: "foundation",
     accent: true,
   },
@@ -80,7 +80,7 @@ export const clusters = [
     label: "Safety flagship",
     kicker: "CLUSTER 4",
     description:
-      "Killswitches. Audit trails. The safety stack battle-tested in hapi-cli shipping real brokerage orders. Trust ladders and intent tokens coming in v0.1.",
+      "Killswitches. Trust ladders and intent tokens in v0.1. Battle-tested in hapi-cli.",
     layer: "safety",
     accent: true,
   },

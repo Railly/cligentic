@@ -1,26 +1,21 @@
 import { Section } from "../components/section";
 
-/**
- * Why — the thesis section. Three columns of "the problem nobody's solving."
- * No blocks, no screenshots, just words. This is where the reader decides
- * if they buy the premise.
- */
 export function Why() {
   const pillars = [
     {
       kicker: "01",
-      title: "Every CLI ships the same 30 problems.",
-      body: "State directory. Config loader. Session persistence. JSON output. Error mapping. Audit trail. Spinner. Banner. Help override. You've written them a dozen times. cligentic extracts the winners and lets you copy them. You own every byte.",
+      title: "You've built these 30 times.",
+      body: "Config loader. Session tokens. JSON output. Audit trail. Banner. Every CLI reinvents the same pieces. Copy them once, own them forever.",
     },
     {
       kicker: "02",
-      title: "Agents need CLIs to be machine-operable.",
-      body: "stdout must be data. stderr must be hints. `--json` must exist. Next steps must be structured. No CLI framework treats agents as a first-class consumer. cligentic's blocks ship with that discipline from line one.",
+      title: "Agents can't parse your output.",
+      body: "stdout must be JSON. stderr must be hints. No framework ships that discipline. cligentic blocks do.",
     },
     {
       kicker: "03",
-      title: "High-stakes CLIs need safety primitives.",
-      body: "Trust ladders with tiered auth. Killswitch files. Append-only audit logs. Intent tokens bound to operation fingerprints. These aren't in clack, oclif, citty, or any npm lib. They're hand-rolled every time. Not anymore.",
+      title: "Safety is hand-rolled every time.",
+      body: "Killswitches. Trust ladders. Intent tokens. Audit trails. None of this exists in clack, oclif, or citty.",
     },
   ];
 
@@ -28,8 +23,7 @@ export function Why() {
     <Section
       id="why"
       kicker="The problem"
-      title="CLI tooling stopped evolving when humans stopped being the primary operators."
-      description="The stack (commander, oclif, inquirer) was designed for a world before Claude Code, Cursor, and Codex. Agents operate CLIs now. The primitives haven't caught up."
+      title="CLI primitives stopped evolving. Agents didn't."
     >
       <div className="grid gap-8 md:grid-cols-3 md:gap-10">
         {pillars.map((pillar) => (

@@ -12,8 +12,7 @@ export function Clusters() {
     <Section
       id="blocks"
       kicker="The catalog"
-      title="Four clusters. Ten blocks. Growing."
-      description="Each block is extracted from a production CLI: hapi-cli, sunat-cli, trx, spoti-cli. The three-strikes rule: a block only enters the catalog after it's been reinvented in three different CLIs, or when it fills a gap nothing else ships."
+      title="16 blocks. Four clusters."
     >
       <div className="flex flex-col gap-16">
         {clusters.map((cluster) => {

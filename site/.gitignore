@@ -1,0 +1,5 @@
+.vercel
+
+# Prebuild copies (generated for Vercel)
+registry.json
+registry-source/

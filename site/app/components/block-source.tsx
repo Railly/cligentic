@@ -23,8 +23,8 @@ type Props = {
 };
 
 // Module-level theme cache — read once, reuse across renders.
-let themeCache: object | null = null;
-function loadTheme(): object {
+let themeCache: Record<string, unknown> | null = null;
+function loadTheme(): Record<string, unknown> {
   if (!themeCache) {
     const themePath = join(
       process.cwd(),
@@ -34,7 +34,7 @@ function loadTheme(): object {
     );
     themeCache = JSON.parse(readFileSync(themePath, "utf8"));
   }
-  return themeCache;
+  return themeCache as Record<string, unknown>;
 }
 
 export async function BlockSource({

@@ -31,8 +31,17 @@ export type Registry = {
   items: RegistryItem[];
 };
 
-// Repo root is two levels up from site/app/lib.
-const REGISTRY_PATH = join(process.cwd(), "..", "registry.json");
+// Try local copy first (created by prebuild.sh for Vercel), fall back to parent (local dev).
+const REGISTRY_PATH = (() => {
+  const local = join(process.cwd(), "registry.json");
+  const parent = join(process.cwd(), "..", "registry.json");
+  try {
+    readFileSync(local, "utf8");
+    return local;
+  } catch {
+    return parent;
+  }
+})();
 
 function loadRegistry(): Registry {
   const content = readFileSync(REGISTRY_PATH, "utf8");

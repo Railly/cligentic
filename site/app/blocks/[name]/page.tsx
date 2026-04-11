@@ -79,8 +79,15 @@ async function loadBlockContent(name: string) {
  * and static across the build.
  */
 function loadBlockSource(relativePath: string): string {
-  const abs = join(process.cwd(), "..", relativePath);
-  return readFileSync(abs, "utf8");
+  // Try local copy first (prebuild.sh copies for Vercel), fall back to parent (local dev).
+  const filename = relativePath.replace(/^registry\//, "");
+  const local = join(process.cwd(), "registry-source", filename);
+  const parent = join(process.cwd(), "..", relativePath);
+  try {
+    return readFileSync(local, "utf8");
+  } catch {
+    return readFileSync(parent, "utf8");
+  }
 }
 
 export default async function BlockDetailPage({ params }: Props) {

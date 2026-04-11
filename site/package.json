@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "portless run next dev --turbopack",
-    "build": "next build",
+    "prebuild": "bash scripts/prebuild.sh",
+    "build": "bash scripts/prebuild.sh && next build",
     "start": "next start",
     "lint": "biome check --write ."
   },

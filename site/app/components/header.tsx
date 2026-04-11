@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { GitHubStarButton } from "./github-star-button";
 import { Logo } from "./logo";
 
 /**
- * Top bar of the landing. Logo top-left, credit top-right.
+ * Top bar of the landing. Logo top-left, GitHub star button top-right.
  * Sits inside the viewport hairline frame.
  */
 export function Header() {
@@ -12,24 +13,8 @@ export function Header() {
         <Logo />
       </Link>
 
-      <div className="hidden text-right text-[11px] leading-tight text-[color:var(--color-fg-dim)] sm:block">
-        <div>By Railly Hugo</div>
-        <div className="text-[color:var(--color-fg-muted)]">
-          Battle-tested in{" "}
-          <Link
-            href="https://github.com/crafter-station/hapi-cli"
-            className="underline decoration-[color:var(--color-fg-dim)] underline-offset-2 hover:text-[color:var(--color-accent)] hover:decoration-[color:var(--color-accent)]"
-          >
-            hapi-cli
-          </Link>
-          {" + "}
-          <Link
-            href="https://github.com/crafter-station/sunat-cli"
-            className="underline decoration-[color:var(--color-fg-dim)] underline-offset-2 hover:text-[color:var(--color-accent)] hover:decoration-[color:var(--color-accent)]"
-          >
-            sunat-cli
-          </Link>
-        </div>
+      <div className="hidden sm:block">
+        <GitHubStarButton />
       </div>
     </header>
   );

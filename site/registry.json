@@ -22,7 +22,7 @@
       "title": "open-url",
       "description": "Open a URL in the user's default browser across macOS, Linux, Windows, WSL, SSH, and headless CI. Respects `BROWSER` env var. Fallback chain with manual print. Never throws.",
       "registryDependencies": [
-        "http://localhost:4711/r/detect.json"
+        "https://cligentic.railly.dev/r/detect.json"
       ],
       "files": [
         {
@@ -41,7 +41,7 @@
         "picocolors"
       ],
       "registryDependencies": [
-        "http://localhost:4711/r/detect.json"
+        "https://cligentic.railly.dev/r/detect.json"
       ],
       "files": [
         {
@@ -61,7 +61,7 @@
         "picocolors"
       ],
       "registryDependencies": [
-        "http://localhost:4711/r/json-mode.json"
+        "https://cligentic.railly.dev/r/json-mode.json"
       ],
       "files": [
         {
@@ -70,7 +70,7 @@
           "target": "src/cli/agent/next-steps.ts"
         }
       ],
-      "docs": "## Next steps\n\n```ts\nimport { emit } from './agent/json-mode';\nimport { emitNextSteps } from './agent/next-steps';\n\nprogram.command('list').action(async (opts) => {\n  const items = await fetchItems();\n  emit(items, opts);\n  emitNextSteps([\n    { command: 'myapp show <id>', description: 'see details for one item' },\n    { command: 'myapp export', description: 'export all', optional: true },\n  ], opts);\n});\n```\n\nAgents parse `stderr` line-by-line and filter `{type: 'next-step', ...}`\nobjects to know what to try next. Humans see a formatted block with\narrow bullets.\n\n**Note**: the registryDependency on json-mode uses a localhost URL for\ndev. In production it will point to https://cligentic.railly.dev/r/json-mode.json."
+      "docs": "## Next steps\n\n```ts\nimport { emit } from './agent/json-mode';\nimport { emitNextSteps } from './agent/next-steps';\n\nprogram.command('list').action(async (opts) => {\n  const items = await fetchItems();\n  emit(items, opts);\n  emitNextSteps([\n    { command: 'myapp show <id>', description: 'see details for one item' },\n    { command: 'myapp export', description: 'export all', optional: true },\n  ], opts);\n});\n```\n\nAgents parse `stderr` line-by-line and filter `{type: 'next-step', ...}`\nobjects to know what to try next. Humans see a formatted block with\narrow bullets.\n\n**Note**: this block auto-pulls `json-mode` via `registryDependencies`,\nso you only need to install `next-steps` and shadcn fetches both."
     },
     {
       "name": "copy-clipboard",
@@ -78,7 +78,7 @@
       "title": "copy-clipboard",
       "description": "Copy text to the system clipboard across macOS, Linux (X11 + Wayland), Windows, and WSL. Detects `pbcopy`, `xclip`, `xsel`, `wl-copy`, `clip.exe` automatically. Typed verdict, never throws.",
       "registryDependencies": [
-        "http://localhost:4711/r/detect.json"
+        "https://cligentic.railly.dev/r/detect.json"
       ],
       "files": [
         {
@@ -94,7 +94,7 @@
       "title": "notify-os",
       "description": "Fire a system notification across macOS (`osascript`), Linux (`notify-send`), Windows and WSL (PowerShell). Silently skips in CI. Typed verdict, never throws.",
       "registryDependencies": [
-        "http://localhost:4711/r/detect.json"
+        "https://cligentic.railly.dev/r/detect.json"
       ],
       "files": [
         {
@@ -149,7 +149,7 @@
       "title": "banner",
       "description": "Gradient ASCII wordmark for your CLI. Shown on bare invoke or `--help`. Vertical gradient between two hex colors. Respects `NO_COLOR`. Includes minimal block-letter renderer.",
       "registryDependencies": [
-        "http://localhost:4711/r/detect.json"
+        "https://cligentic.railly.dev/r/detect.json"
       ],
       "files": [
         {
@@ -165,7 +165,7 @@
       "title": "config",
       "description": "Profile-aware JSON config loader. Reads from the app's config directory with multi-profile support (`--profile production`). Merge precedence: defaults < profile overrides.",
       "registryDependencies": [
-        "http://localhost:4711/r/atomic-write.json"
+        "https://cligentic.railly.dev/r/atomic-write.json"
       ],
       "files": [
         {
@@ -181,7 +181,7 @@
       "title": "session",
       "description": "Auth token persistence. Load on boot, save after login, clear on logout, check expiry. Atomic writes, `0o600` permissions. The companion of every `login` command.",
       "registryDependencies": [
-        "http://localhost:4711/r/atomic-write.json"
+        "https://cligentic.railly.dev/r/atomic-write.json"
       ],
       "files": [
         {

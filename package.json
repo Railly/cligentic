@@ -12,8 +12,7 @@
     "prototype-consumer"
   ],
   "scripts": {
-    "build": "bun scripts/build-registry.ts",
-    "serve": "bun scripts/serve.ts",
+    "build": "shadcn build registry.json -o site/public/r",
     "check": "biome check --write .",
     "format": "biome format --write ."
   },

@@ -6,17 +6,18 @@ the local registry. It is gitignored except for this README.
 ## Usage
 
 ```bash
-# Terminal 1: build + serve
-cd ..
-bun scripts/build-registry.ts
-bun scripts/serve.ts
+# Terminal 1: build + serve via the site dev server
+cd ../site
+bun run dev   # serves site/public/r/* at http://localhost:3000
 
 # Terminal 2: simulate a real consumer
 cd prototype-consumer
 bun init -y
 echo '{"$schema":"https://ui.shadcn.com/schema.json","style":"default","rsc":false,"tsx":true,"tailwind":{"config":"","css":"","baseColor":"neutral","cssVariables":false},"aliases":{"components":"src/cli","utils":"src/cli/lib","lib":"src/cli/lib","hooks":"src/cli/hooks","ui":"src/cli/ui"}}' > components.json
-bunx shadcn@latest add http://localhost:4711/r/open-url.json
 
-# Expected:
-#   src/cli/platform/open-url.ts  (written)
+# Note: registry.json now ships prod URLs, so registryDependencies will
+# resolve to https://cligentic.railly.dev. To test a fully local chain,
+# rebuild with the placeholder URL substituted, or rely on prod for deps:
+bunx shadcn@latest add http://localhost:3000/r/killswitch.json  # no deps, fully local
+bunx shadcn@latest add http://localhost:3000/r/next-steps.json  # local + prod deps
 ```

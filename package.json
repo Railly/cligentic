@@ -12,7 +12,7 @@
     "prototype-consumer"
   ],
   "scripts": {
-    "build": "shadcn build registry.json -o site/public/r",
+    "build": "bunx --bun shadcn@latest build registry.json -o site/public/r",
     "check": "biome check --write .",
     "format": "biome format --write ."
   },

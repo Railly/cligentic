@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "global-flags",
+  "type": "registry:file",
+  "title": "global-flags",
+  "description": "Standard global flags for agent-first CLIs: `--json`, `--dry-run`, `--profile`, `--no-input`, `--quiet`, `--verbose`. Normalizes raw argv into typed `GlobalFlags`. Includes flag definitions for any parser.",
+  "files": [
+    {
+      "path": "registry/foundation/global-flags.ts",
+      "type": "registry:file",
+      "target": "src/cli/foundation/global-flags.ts",
+      "content": "// cligentic block: global-flags\n//\n// Standard global flags every agent-first CLI should expose.\n// Returns a typed options object that other blocks (json-mode,\n// killswitch, config) consume.\n//\n// Usage:\n//   import { type GlobalFlags, parseGlobalFlags } from \"./foundation/global-flags\";\n//\n//   // After your argv parser extracts raw opts:\n//   const flags = parseGlobalFlags(rawOpts);\n//   emit(data, flags);  // json-mode reads flags.json\n//   note(\"loading...\", flags);  // respects flags.quiet\n\nexport type GlobalFlags = {\n  /** Emit JSON output for agents. Implied when stdout is piped. */\n  json: boolean;\n  /** Validate without calling upstream. */\n  dryRun: boolean;\n  /** Config profile name. */\n  profile: string | undefined;\n  /** Never prompt, fail fast. For CI and agents. */\n  noInput: boolean;\n  /** Suppress non-essential output. */\n  quiet: boolean;\n  /** Verbose logging to stderr. */\n  verbose: boolean;\n};\n\n/**\n * Normalizes raw CLI options into a typed GlobalFlags object.\n * Handles common aliases and env var fallbacks.\n *\n * Pass the output of your argv parser (commander opts, citty args, etc).\n */\nexport function parseGlobalFlags(raw: Record<string, unknown> = {}): GlobalFlags {\n  return {\n    json: Boolean(raw.json ?? process.env.CLI_JSON === \"1\"),\n    dryRun: Boolean(raw.dryRun ?? raw[\"dry-run\"] ?? false),\n    profile: (raw.profile as string) ?? process.env.CLI_PROFILE ?? undefined,\n    noInput: Boolean(raw.noInput ?? raw[\"no-input\"] ?? process.env.CI === \"true\"),\n    quiet: Boolean(raw.quiet ?? raw.q ?? false),\n    verbose: Boolean(raw.verbose ?? raw.v ?? false),\n  };\n}\n\n/**\n * Returns the flag definitions as an array. Useful for registering\n * with commander, citty, or any argv parser.\n *\n * Example with commander:\n *   for (const f of getGlobalFlagDefs()) {\n *     program.option(f.flag, f.description);\n *   }\n */\nexport function getGlobalFlagDefs() {\n  return [\n    { flag: \"--json\", description: \"Emit JSON output for agents\" },\n    { flag: \"--dry-run\", description: \"Validate without calling upstream\" },\n    { flag: \"--profile <name>\", description: \"Config profile to use\" },\n    { flag: \"--no-input\", description: \"Never prompt, fail fast\" },\n    { flag: \"-q, --quiet\", description: \"Suppress non-essential output\" },\n    { flag: \"-v, --verbose\", description: \"Verbose logging to stderr\" },\n  ] as const;\n}\n"
+    }
+  ]
+}

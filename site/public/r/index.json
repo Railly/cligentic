@@ -1,0 +1,103 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "cligentic",
+  "homepage": "https://cligentic.railly.dev",
+  "items": [
+    {
+      "name": "detect",
+      "type": "registry:file",
+      "title": "detect",
+      "description": "Environment detection helpers: `isWsl`, `isCi`, `isHeadlessLinux`, `hasCommand`, `detectMode`, `shouldColor`. Shared across platform and agent blocks. Auto-installed as dependency."
+    },
+    {
+      "name": "open-url",
+      "type": "registry:file",
+      "title": "open-url",
+      "description": "Open a URL in the user's default browser across macOS, Linux, Windows, WSL, SSH, and headless CI. Respects `BROWSER` env var. Fallback chain with manual print. Never throws."
+    },
+    {
+      "name": "json-mode",
+      "type": "registry:file",
+      "title": "json-mode",
+      "description": "Dual-rendering output for CLIs serving humans and agents. Auto-detects TTY vs piped, enforces `stdout`/`stderr` discipline, respects `NO_COLOR`. Never calls `process.exit()`."
+    },
+    {
+      "name": "next-steps",
+      "type": "registry:file",
+      "title": "next-steps",
+      "description": "Post-command guidance for agents and humans. Emit structured `next-step` hints to `stderr` as NDJSON for agents, formatted block for humans. Chains with `json-mode`."
+    },
+    {
+      "name": "copy-clipboard",
+      "type": "registry:file",
+      "title": "copy-clipboard",
+      "description": "Copy text to the system clipboard across macOS, Linux (X11 + Wayland), Windows, and WSL. Detects `pbcopy`, `xclip`, `xsel`, `wl-copy`, `clip.exe` automatically. Typed verdict, never throws."
+    },
+    {
+      "name": "notify-os",
+      "type": "registry:file",
+      "title": "notify-os",
+      "description": "Fire a system notification across macOS (`osascript`), Linux (`notify-send`), Windows and WSL (PowerShell). Silently skips in CI. Typed verdict, never throws."
+    },
+    {
+      "name": "xdg-paths",
+      "type": "registry:file",
+      "title": "xdg-paths",
+      "description": "XDG Base Directory Spec resolver with macOS (`~/Library`) and Windows (`%APPDATA%`) fallbacks. Gives your CLI canonical `config`/`state`/`cache`/`audit`/`sessions` paths. `APP_HOME` env override for testing."
+    },
+    {
+      "name": "atomic-write",
+      "type": "registry:file",
+      "title": "atomic-write",
+      "description": "Write files atomically: temp file, `fsync`, rename. Prevents corruption from crashes or concurrent CLI processes. Windows-aware (unlink before rename). Includes `atomicWriteJson` convenience."
+    },
+    {
+      "name": "audit-log",
+      "type": "registry:file",
+      "title": "audit-log",
+      "description": "Append-only JSONL audit trail with per-day rotation. Every action gets a timestamped record. Mode `0o600`. Includes `tailAudit` for reading recent records. Battle-tested in hapi-cli and sunat-cli."
+    },
+    {
+      "name": "banner",
+      "type": "registry:file",
+      "title": "banner",
+      "description": "Gradient ASCII wordmark for your CLI. Shown on bare invoke or `--help`. Vertical gradient between two hex colors. Respects `NO_COLOR`. Includes minimal block-letter renderer."
+    },
+    {
+      "name": "config",
+      "type": "registry:file",
+      "title": "config",
+      "description": "Profile-aware JSON config loader. Reads from the app's config directory with multi-profile support (`--profile production`). Merge precedence: defaults < profile overrides."
+    },
+    {
+      "name": "session",
+      "type": "registry:file",
+      "title": "session",
+      "description": "Auth token persistence. Load on boot, save after login, clear on logout, check expiry. Atomic writes, `0o600` permissions. The companion of every `login` command."
+    },
+    {
+      "name": "error-map",
+      "type": "registry:file",
+      "title": "error-map",
+      "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. Agents read the `hint` field to self-correct."
+    },
+    {
+      "name": "global-flags",
+      "type": "registry:file",
+      "title": "global-flags",
+      "description": "Standard global flags for agent-first CLIs: `--json`, `--dry-run`, `--profile`, `--no-input`, `--quiet`, `--verbose`. Normalizes raw argv into typed `GlobalFlags`. Includes flag definitions for any parser."
+    },
+    {
+      "name": "telemetry",
+      "type": "registry:file",
+      "title": "telemetry",
+      "description": "Anonymous usage tracking. Opt-out via `CLI_NO_TELEMETRY=1` or `DO_NOT_TRACK=1`. Local JSONL logging + optional remote POST. Never throws, never blocks. Disabled in CI automatically."
+    },
+    {
+      "name": "killswitch",
+      "type": "registry:file",
+      "title": "killswitch",
+      "description": "Binary safety gate. If `~/.app/KILLSWITCH` exists, all write operations refuse. File exists = stopped. File gone = resumed. One `existsSync` call. Battle-tested in hapi-cli for real brokerage orders."
+    }
+  ]
+}

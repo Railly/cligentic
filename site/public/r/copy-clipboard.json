@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "copy-clipboard",
+  "type": "registry:file",
+  "title": "copy-clipboard",
+  "description": "Copy text to the system clipboard across macOS, Linux (X11 + Wayland), Windows, and WSL. Detects `pbcopy`, `xclip`, `xsel`, `wl-copy`, `clip.exe` automatically. Typed verdict, never throws.",
+  "registryDependencies": [
+    "http://localhost:4711/r/detect.json"
+  ],
+  "files": [
+    {
+      "path": "registry/platform/copy-clipboard.ts",
+      "type": "registry:file",
+      "target": "src/cli/platform/copy-clipboard.ts",
+      "content": "// cligentic block: copy-clipboard\n//\n// Copies text to the system clipboard across macOS, Linux (X11 + Wayland),\n// Windows, and WSL. Returns a typed verdict instead of throwing.\n//\n// Usage:\n//   import { copyToClipboard } from \"./platform/copy-clipboard\";\n//\n//   const result = await copyToClipboard(\"https://cligentic.railly.dev\");\n//   if (!result.copied) {\n//     console.log(\"Copy this manually:\", text);\n//   }\n\nimport { execSync } from \"node:child_process\";\nimport { platform } from \"node:os\";\nimport { hasCommand, isWsl } from \"./detect\";\n\nexport type CopyResult = {\n  copied: boolean;\n  via: \"pbcopy\" | \"xclip\" | \"xsel\" | \"wl-copy\" | \"clip.exe\" | \"powershell\" | \"manual\";\n  reason?: string;\n};\n\nexport type CopyOptions = {\n  dryRun?: boolean;\n};\n\nfunction tryExec(cmd: string, text: string): boolean {\n  try {\n    execSync(cmd, { input: text, stdio: [\"pipe\", \"ignore\", \"ignore\"], timeout: 5000 });\n    return true;\n  } catch {\n    return false;\n  }\n}\n\nexport async function copyToClipboard(\n  text: string,\n  options: CopyOptions = {},\n): Promise<CopyResult> {\n  const { dryRun = false } = options;\n  const os = platform();\n\n  if (os === \"darwin\") {\n    if (dryRun) return { copied: true, via: \"pbcopy\", reason: \"would run: pbcopy\" };\n    if (tryExec(\"pbcopy\", text)) return { copied: true, via: \"pbcopy\" };\n    return { copied: false, via: \"manual\", reason: \"pbcopy failed\" };\n  }\n\n  if (os === \"win32\") {\n    if (dryRun) return { copied: true, via: \"powershell\", reason: \"would run: Set-Clipboard\" };\n    if (tryExec('powershell.exe -NoProfile -Command \"Set-Clipboard -Value $input\"', text)) {\n      return { copied: true, via: \"powershell\" };\n    }\n    return { copied: false, via: \"manual\", reason: \"powershell Set-Clipboard failed\" };\n  }\n\n  if (os === \"linux\" && isWsl()) {\n    if (hasCommand(\"clip.exe\")) {\n      if (dryRun) return { copied: true, via: \"clip.exe\", reason: \"would run: clip.exe\" };\n      if (tryExec(\"clip.exe\", text)) return { copied: true, via: \"clip.exe\" };\n    }\n    return { copied: false, via: \"manual\", reason: \"WSL without clip.exe\" };\n  }\n\n  // Linux: Wayland first, then X11\n  if (process.env.WAYLAND_DISPLAY && hasCommand(\"wl-copy\")) {\n    if (dryRun) return { copied: true, via: \"wl-copy\", reason: \"would run: wl-copy\" };\n    if (tryExec(\"wl-copy\", text)) return { copied: true, via: \"wl-copy\" };\n  }\n\n  if (process.env.DISPLAY) {\n    if (hasCommand(\"xclip\")) {\n      if (dryRun) return { copied: true, via: \"xclip\", reason: \"would run: xclip\" };\n      if (tryExec(\"xclip -selection clipboard\", text)) return { copied: true, via: \"xclip\" };\n    }\n    if (hasCommand(\"xsel\")) {\n      if (dryRun) return { copied: true, via: \"xsel\", reason: \"would run: xsel\" };\n      if (tryExec(\"xsel --clipboard --input\", text)) return { copied: true, via: \"xsel\" };\n    }\n  }\n\n  return { copied: false, via: \"manual\", reason: \"no clipboard backend found\" };\n}\n"
+    }
+  ]
+}

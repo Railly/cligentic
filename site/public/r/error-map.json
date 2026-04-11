@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "error-map",
+  "type": "registry:file",
+  "title": "error-map",
+  "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. Agents read the `hint` field to self-correct.",
+  "files": [
+    {
+      "path": "registry/foundation/error-map.ts",
+      "type": "registry:file",
+      "target": "src/cli/foundation/error-map.ts",
+      "content": "// cligentic block: error-map\n//\n// Typed error class with code, name, human message, and hint. Maps\n// upstream API errors to actionable messages. Agents read the hint\n// field to self-correct.\n//\n// Usage:\n//   import { AppError, mapError } from \"./foundation/error-map\";\n//\n//   const errors = {\n//     \"AUTH_EXPIRED\": { name: \"AuthExpired\", human: \"Session expired.\", hint: \"Run: myapp login\" },\n//     \"RATE_LIMIT\":  { name: \"RateLimit\", human: \"Too many requests.\", hint: \"Wait 60s and retry.\" },\n//   };\n//\n//   try { await api.call(); }\n//   catch (err) { throw mapError(err, errors); }\n\nexport type ErrorEntry = {\n  name: string;\n  human: string;\n  hint?: string;\n};\n\nexport type ErrorMap = Record<string, ErrorEntry>;\n\nexport class AppError extends Error {\n  code: string;\n  human: string;\n  hint?: string;\n\n  constructor(code: string, entry: ErrorEntry, cause?: unknown) {\n    super(entry.human);\n    this.name = entry.name;\n    this.code = code;\n    this.human = entry.human;\n    this.hint = entry.hint;\n    if (cause) this.cause = cause;\n  }\n\n  toJSON() {\n    return {\n      ok: false,\n      code: this.code,\n      name: this.name,\n      error: this.human,\n      hint: this.hint,\n    };\n  }\n}\n\n/**\n * Maps an upstream error to an AppError using the provided error map.\n * If the error has a `code` property that matches a key in the map,\n * returns a typed AppError with the mapped message and hint.\n * Otherwise wraps the original error as-is.\n */\nexport function mapError(err: unknown, errors: ErrorMap): AppError {\n  const code = extractCode(err);\n  if (code && errors[code]) {\n    return new AppError(code, errors[code], err);\n  }\n  const message = err instanceof Error ? err.message : String(err);\n  return new AppError(\"UNKNOWN\", { name: \"UnknownError\", human: message }, err);\n}\n\nfunction extractCode(err: unknown): string | null {\n  if (err && typeof err === \"object\" && \"code\" in err) {\n    return String((err as Record<string, unknown>).code);\n  }\n  return null;\n}\n"
+    }
+  ]
+}

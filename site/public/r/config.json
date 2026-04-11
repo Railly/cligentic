@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "config",
+  "type": "registry:file",
+  "title": "config",
+  "description": "Profile-aware JSON config loader. Reads from the app's config directory with multi-profile support (`--profile production`). Merge precedence: defaults < profile overrides.",
+  "registryDependencies": [
+    "http://localhost:4711/r/atomic-write.json"
+  ],
+  "files": [
+    {
+      "path": "registry/foundation/config.ts",
+      "type": "registry:file",
+      "target": "src/cli/foundation/config.ts",
+      "content": "// cligentic block: config\n//\n// Profile-aware config loader. Reads JSON config from the app's config\n// directory with support for multiple profiles (dev, staging, production).\n//\n// Precedence: env vars > CLI flags > profile config > default config.\n//\n// Usage:\n//   import { loadConfig, saveConfig } from \"./foundation/config\";\n//\n//   const config = loadConfig<MyConfig>(paths.config, \"production\");\n//   // reads ~/.config/myapp/config.json, merges profile \"production\"\n\nimport { existsSync, readFileSync } from \"node:fs\";\nimport { join } from \"node:path\";\nimport { atomicWriteJson } from \"./atomic-write\";\n\nexport type ConfigFile<T> = {\n  defaults?: Partial<T>;\n  profiles?: Record<string, Partial<T>>;\n};\n\n/**\n * Loads config from a JSON file at {configDir}/config.json.\n * Merges: defaults <- profile overrides <- env overrides.\n *\n * Returns the defaults if no config file exists (never throws for missing file).\n */\nexport function loadConfig<T extends Record<string, unknown>>(\n  configDir: string,\n  profile?: string,\n): T {\n  const filePath = join(configDir, \"config.json\");\n\n  let file: ConfigFile<T> = {};\n  if (existsSync(filePath)) {\n    try {\n      file = JSON.parse(readFileSync(filePath, \"utf8\"));\n    } catch {\n      // corrupted config, start fresh\n    }\n  }\n\n  const defaults = (file.defaults ?? {}) as T;\n  const profileOverrides = profile && file.profiles?.[profile]\n    ? file.profiles[profile]\n    : {};\n\n  return { ...defaults, ...profileOverrides } as T;\n}\n\n/**\n * Saves config to {configDir}/config.json using atomic write.\n * Merges the update into the existing file (preserves other profiles).\n */\nexport function saveConfig<T extends Record<string, unknown>>(\n  configDir: string,\n  update: ConfigFile<T>,\n): void {\n  const filePath = join(configDir, \"config.json\");\n\n  let existing: ConfigFile<T> = {};\n  if (existsSync(filePath)) {\n    try {\n      existing = JSON.parse(readFileSync(filePath, \"utf8\"));\n    } catch {\n      // corrupted, overwrite\n    }\n  }\n\n  const merged: ConfigFile<T> = {\n    defaults: { ...existing.defaults, ...update.defaults },\n    profiles: { ...existing.profiles, ...update.profiles },\n  };\n\n  atomicWriteJson(filePath, merged);\n}\n\n/**\n * Lists available profile names from the config file.\n */\nexport function listProfiles(configDir: string): string[] {\n  const filePath = join(configDir, \"config.json\");\n  if (!existsSync(filePath)) return [];\n  try {\n    const file = JSON.parse(readFileSync(filePath, \"utf8\"));\n    return Object.keys(file.profiles ?? {});\n  } catch {\n    return [];\n  }\n}\n"
+    }
+  ]
+}

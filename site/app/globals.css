@@ -184,10 +184,11 @@
   }
 
   .btn-accent .btn-label {
-    padding: 14px 18px;
+    padding: 14px 22px 14px 18px;
     font-family: var(--font-mono);
     font-size: 13px;
     letter-spacing: -0.01em;
+    min-width: 0;
   }
 
   .btn-accent .btn-arrow {

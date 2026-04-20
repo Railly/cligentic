@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "doctor",
+  "title": "doctor",
+  "description": "Health-check pattern for CLI `doctor` commands. Run named checks sequentially with per-check error isolation. Dual output via `json-mode`: structured JSON for agents, `[OK]`/`[FAIL]` table for humans.",
+  "registryDependencies": [
+    "https://cligentic.railly.dev/r/json-mode.json"
+  ],
+  "files": [
+    {
+      "path": "registry/agent/doctor.ts",
+      "content": "// cligentic block: doctor\n//\n// Health-check pattern. Run named checks sequentially, emit structured results.\n// Integrates with json-mode for dual output.\n//\n// Usage:\n//   import { runDoctor, renderDoctor } from \"./agent/doctor\";\n//\n//   const result = await runDoctor([\n//     async () => {\n//       const ok = await ping();\n//       return { name: \"api-reachable\", ok, detail: ok ? \"200 OK\" : \"timeout\" };\n//     },\n//   ]);\n//   renderDoctor(result, opts);\n\nimport { type EmitOptions, detectMode, emit } from \"./json-mode\";\n\nexport type DoctorCheck = { name: string; ok: boolean; detail: string };\n\nexport type DoctorResult = { ok: boolean; checks: DoctorCheck[] };\n\n/**\n * Runs checks sequentially. Each check is isolated — a thrown error is\n * caught and recorded as a failed check so the rest still run.\n */\nexport async function runDoctor(\n  checks: Array<() => Promise<DoctorCheck>>,\n): Promise<DoctorResult> {\n  const results: DoctorCheck[] = [];\n\n  for (const check of checks) {\n    try {\n      results.push(await check());\n    } catch (err) {\n      const detail = err instanceof Error ? err.message : String(err);\n      results.push({ name: \"unknown\", ok: false, detail });\n    }\n  }\n\n  return { ok: results.every((c) => c.ok), checks: results };\n}\n\n/**\n * Renders a DoctorResult to stdout.\n * JSON mode: emits the structured result via emit().\n * Human mode: prints [OK] / [FAIL] per check, then a summary line.\n */\nexport function renderDoctor(result: DoctorResult, opts: EmitOptions = {}): void {\n  const mode = detectMode(opts);\n\n  if (mode === \"json\") {\n    emit(result, opts);\n    return;\n  }\n\n  for (const check of result.checks) {\n    const badge = check.ok ? \"[OK]  \" : \"[FAIL]\";\n    process.stdout.write(`${badge} ${check.name}: ${check.detail}\\n`);\n  }\n\n  const total = result.checks.length;\n  const passed = result.checks.filter((c) => c.ok).length;\n  process.stdout.write(`\\n${passed}/${total} checks passed\\n`);\n}\n",
+      "type": "registry:file",
+      "target": "src/cli/agent/doctor.ts"
+    }
+  ],
+  "type": "registry:file"
+}

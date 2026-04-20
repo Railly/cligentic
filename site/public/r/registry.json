@@ -195,12 +195,25 @@
       "name": "error-map",
       "type": "registry:file",
       "title": "error-map",
-      "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. Agents read the `hint` field to self-correct.",
+      "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. `fromHttp()` maps status codes directly. Agents read the `hint` field to self-correct.",
       "files": [
         {
           "path": "registry/foundation/error-map.ts",
           "type": "registry:file",
           "target": "src/cli/foundation/error-map.ts"
+        }
+      ]
+    },
+    {
+      "name": "argv",
+      "type": "registry:file",
+      "title": "argv",
+      "description": "Minimal POSIX argv parser for zero-framework CLIs. Zero dependencies. Handles `--flag`, `--flag value`, `--flag=value`, `-f`, combined short flags, positional args, `--` stop, and kebab-to-camelCase normalization.",
+      "files": [
+        {
+          "path": "registry/foundation/argv.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/argv.ts"
         }
       ]
     },
@@ -227,6 +240,22 @@
           "path": "registry/foundation/telemetry.ts",
           "type": "registry:file",
           "target": "src/cli/foundation/telemetry.ts"
+        }
+      ]
+    },
+    {
+      "name": "doctor",
+      "type": "registry:file",
+      "title": "doctor",
+      "description": "Health-check pattern for CLI `doctor` commands. Run named checks sequentially with per-check error isolation. Dual output via `json-mode`: structured JSON for agents, `[OK]`/`[FAIL]` table for humans.",
+      "registryDependencies": [
+        "https://cligentic.railly.dev/r/json-mode.json"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/doctor.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/doctor.ts"
         }
       ]
     },

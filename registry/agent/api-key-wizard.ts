@@ -86,7 +86,9 @@ export class ApiKeyWizardCancelled extends Error {
 }
 
 export class ApiKeyWizardValidationFailed extends Error {
-  readonly cause: unknown
+  // `cause` is a standard Error field; declare the override explicitly
+  // so strict TS configs (noImplicitOverride) don't complain.
+  override readonly cause: unknown
   constructor(cause: unknown) {
     super(cause instanceof Error ? cause.message : String(cause))
     this.name = 'ApiKeyWizardValidationFailed'

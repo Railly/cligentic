@@ -20,7 +20,7 @@ Every CLI I shipped to production reinvented the same primitives: cross-OS clipb
 
 cligentic is the shadcn model applied to CLI infrastructure: a registry of copy-paste TypeScript files, no runtime dependency, no framework lock-in. Install what you need, edit it freely, ship it.
 
-## What's in v0 (18 blocks)
+## What's in v0 (20 blocks)
 
 | Layer | Blocks |
 |---|---|

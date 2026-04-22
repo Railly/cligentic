@@ -195,12 +195,25 @@
       "name": "error-map",
       "type": "registry:file",
       "title": "error-map",
-      "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. Agents read the `hint` field to self-correct.",
+      "description": "Typed `AppError` class with `code`, `name`, `human` message, and `hint`. Maps upstream API errors to actionable messages. `fromHttp()` maps status codes directly. Agents read the `hint` field to self-correct.",
       "files": [
         {
           "path": "registry/foundation/error-map.ts",
           "type": "registry:file",
           "target": "src/cli/foundation/error-map.ts"
+        }
+      ]
+    },
+    {
+      "name": "argv",
+      "type": "registry:file",
+      "title": "argv",
+      "description": "Minimal POSIX argv parser for zero-framework CLIs. Zero dependencies. Handles `--flag`, `--flag value`, `--flag=value`, `-f`, combined short flags, positional args, `--` stop, and kebab-to-camelCase normalization.",
+      "files": [
+        {
+          "path": "registry/foundation/argv.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/argv.ts"
         }
       ]
     },
@@ -231,6 +244,22 @@
       ]
     },
     {
+      "name": "doctor",
+      "type": "registry:file",
+      "title": "doctor",
+      "description": "Health-check pattern for CLI `doctor` commands. Run named checks sequentially with per-check error isolation. Dual output via `json-mode`: structured JSON for agents, `[OK]`/`[FAIL]` table for humans.",
+      "registryDependencies": [
+        "https://cligentic.railly.dev/r/json-mode.json"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/doctor.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/doctor.ts"
+        }
+      ]
+    },
+    {
       "name": "killswitch",
       "type": "registry:file",
       "title": "killswitch",
@@ -240,6 +269,38 @@
           "path": "registry/safety/killswitch.ts",
           "type": "registry:file",
           "target": "src/cli/safety/killswitch.ts"
+        }
+      ]
+    },
+    {
+      "name": "api-key-wizard",
+      "type": "registry:file",
+      "title": "api-key-wizard",
+      "description": "Interactive first-run wizard for API-key-authenticated CLIs. Masked prompt, live validation against your API, then save via your callback. Generic over validator + save — no assumption about TOML/JSON/keychain storage. Throws typed errors, never calls `process.exit`. Extracted from v0-cli.",
+      "dependencies": [
+        "@clack/prompts"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/api-key-wizard.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/api-key-wizard.ts"
+        }
+      ]
+    },
+    {
+      "name": "skill-installer-prompt",
+      "type": "registry:file",
+      "title": "skill-installer-prompt",
+      "description": "Post-init hook that offers to install a companion agent skill (Claude Code / Cursor / MCP-aware). Clack confirm plus a subprocess spawn with inherited stdio. Returns a discriminated outcome (`installed`, `cancelled`, `skipped`, `error`). Never throws.",
+      "dependencies": [
+        "@clack/prompts"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/skill-installer-prompt.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/skill-installer-prompt.ts"
         }
       ]
     }

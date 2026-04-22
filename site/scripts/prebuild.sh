@@ -13,9 +13,11 @@ SITE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(cd "$SITE_DIR/.." 2>/dev/null && pwd)" || REPO_ROOT=""
 
 # Step 1: ensure site/registry.json and site/registry-source/ are present.
-if [ -f "$SITE_DIR/registry.json" ] && [ -d "$SITE_DIR/registry-source" ]; then
-  echo "[prebuild] Registry source already present (likely Vercel build)."
-elif [ -n "$REPO_ROOT" ] && [ -f "$REPO_ROOT/registry.json" ]; then
+# Always prefer the repo-root manifest when available — a stale copy in site/
+# would otherwise short-circuit the sync and ship an outdated block list
+# (this has happened before; the site/registry.json had 16 items when the
+# real registry had 20).
+if [ -n "$REPO_ROOT" ] && [ -f "$REPO_ROOT/registry.json" ]; then
   echo "[prebuild] Copying registry.json from repo root to site/"
   cp "$REPO_ROOT/registry.json" "$SITE_DIR/registry.json"
 
@@ -23,6 +25,8 @@ elif [ -n "$REPO_ROOT" ] && [ -f "$REPO_ROOT/registry.json" ]; then
   rm -rf "$SITE_DIR/registry-source"
   mkdir -p "$SITE_DIR/registry-source"
   cp -r "$REPO_ROOT/registry/"* "$SITE_DIR/registry-source/"
+elif [ -f "$SITE_DIR/registry.json" ] && [ -d "$SITE_DIR/registry-source" ]; then
+  echo "[prebuild] Registry source already present (Vercel build, no repo root)."
 else
   echo "[prebuild] Error: Cannot find registry.json in site/ or parent."
   exit 1

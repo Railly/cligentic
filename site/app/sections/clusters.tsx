@@ -12,7 +12,7 @@ export function Clusters() {
     <Section
       id="blocks"
       kicker="The catalog"
-      title="16 blocks. Four clusters."
+      title="18 blocks. Four clusters."
     >
       <div className="flex flex-col gap-16">
         {clusters.map((cluster) => {

@@ -3,6 +3,7 @@ import { AgentDemo } from "./sections/agent-demo";
 import { Clusters } from "./sections/clusters";
 import { Hero } from "./sections/hero";
 import { HowItWorks } from "./sections/how-it-works";
+import { Skills } from "./sections/skills";
 import { Why } from "./sections/why";
 
 /**
@@ -13,6 +14,7 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
+      <Skills />
       <Why />
       <HowItWorks />
       <AgentDemo />

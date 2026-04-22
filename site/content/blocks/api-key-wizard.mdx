@@ -1,0 +1,100 @@
+## The problem
+
+Every API-key-authenticated CLI needs a first-run flow: prompt the user
+for the key, confirm it works, persist it somewhere. The three steps are
+simple, but the CLI authors who skip them end up shipping a `README` step
+that says "export MYAPP_API_KEY=..." and call it a day.
+
+That isn't enough. The user pastes a wrong key, the next command returns
+a cryptic `HTTP 401`, the user blames the CLI. A minute of interactive
+validation saves the user that loop.
+
+`api-key-wizard` is that minute, extracted as a block. The wizard is
+generic over your validator and your save function — no assumption about
+whether you store the key in TOML, JSON, an env file, or the OS keychain.
+
+## Quickstart
+
+```ts
+import { runApiKeyWizard } from "@/cli/agent/api-key-wizard";
+
+await runApiKeyWizard({
+  appName: "myapp",
+  keyLocationHint: "https://myapp.com/settings/keys",
+  validateKey: async (key) => {
+    const res = await fetch("https://api.myapp.com/v1/user", {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  },
+  identityLabel: (user) => user.email ?? user.id ?? "unknown",
+  saveKey: async (key) => {
+    await saveProfile("default", { auth: { api_key: key } });
+  },
+  shapeHint: (v) =>
+    v.startsWith("mk_") || v.length > 20 ? undefined : "That does not look right",
+});
+```
+
+## The flow
+
+1. **Prompt** via clack password input. The key is masked in the terminal.
+2. **Validate** against your API. Show a spinner while the probe runs,
+   surface the identity label on success.
+3. **Save** via your callback. Also behind a spinner.
+
+At each step the wizard refuses to proceed on invalid input. Nothing is
+saved until validation succeeds.
+
+## Typed errors, never `process.exit`
+
+The wizard never calls `process.exit`. It throws so the caller owns the
+exit code:
+
+```ts
+try {
+  await runApiKeyWizard({ ... });
+} catch (err) {
+  if (err instanceof ApiKeyWizardCancelled) process.exit(130); // SIGINT convention
+  if (err instanceof ApiKeyWizardValidationFailed) process.exit(1);
+  throw err;
+}
+```
+
+This matters when you compose the wizard inside a larger `init` flow that
+has its own follow-up steps (install a companion skill, print next-steps,
+seed a config file).
+
+## Signature
+
+```ts
+export type ApiKeyWizardOptions<Identity> = {
+  appName: string;
+  keyLocationHint: string;
+  validateKey: (key: string) => Promise<Identity>;
+  identityLabel: (identity: Identity) => string;
+  saveKey: (key: string, identity: Identity) => Promise<void>;
+  shapeHint?: (key: string) => string | undefined;
+  minLength?: number;
+  title?: string;
+  validateLabel?: string;
+  saveLabel?: string;
+};
+
+export function runApiKeyWizard<Identity>(
+  opts: ApiKeyWizardOptions<Identity>,
+): Promise<{ key: string; identity: Identity; label: string }>;
+```
+
+## Extracted from v0-cli
+
+The pattern ships in production in [v0-cli](https://github.com/Railly/v0-cli)'s
+`init` command. The block is what's left after you pull out the v0-specific
+bits — API endpoint, TOML profile shape, response schema.
+
+## Pairs with
+
+- `skill-installer-prompt` — offer a companion agent skill after validation.
+- `next-steps` — emit structured hints about what to run now that the CLI
+  is set up.

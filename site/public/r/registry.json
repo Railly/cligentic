@@ -271,6 +271,38 @@
           "target": "src/cli/safety/killswitch.ts"
         }
       ]
+    },
+    {
+      "name": "api-key-wizard",
+      "type": "registry:file",
+      "title": "api-key-wizard",
+      "description": "Interactive first-run wizard for API-key-authenticated CLIs. Masked prompt, live validation against your API, then save via your callback. Generic over validator + save — no assumption about TOML/JSON/keychain storage. Throws typed errors, never calls `process.exit`. Extracted from v0-cli.",
+      "dependencies": [
+        "@clack/prompts"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/api-key-wizard.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/api-key-wizard.ts"
+        }
+      ]
+    },
+    {
+      "name": "skill-installer-prompt",
+      "type": "registry:file",
+      "title": "skill-installer-prompt",
+      "description": "Post-init hook that offers to install a companion agent skill (Claude Code / Cursor / MCP-aware). Clack confirm plus a subprocess spawn with inherited stdio. Returns a discriminated outcome (`installed`, `cancelled`, `skipped`, `error`). Never throws.",
+      "dependencies": [
+        "@clack/prompts"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/skill-installer-prompt.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/skill-installer-prompt.ts"
+        }
+      ]
     }
   ]
 }

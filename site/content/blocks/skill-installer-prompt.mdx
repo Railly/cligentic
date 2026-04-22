@@ -1,0 +1,98 @@
+## The problem
+
+If your CLI has a companion agent skill (Claude Code skill, Cursor skill,
+MCP server) you want to offer it during first-run setup. The one-liner
+your users type in `init` should also, optionally, pipe `npx skills add
+owner/repo` so Claude Code picks the skill up on the next session.
+
+Writing that by hand is a small wart: clack confirm, `child_process.spawn`
+with inherited stdio, error plumbing, retry hints. `skill-installer-prompt`
+is the wart as a block.
+
+## Quickstart
+
+```ts
+import { offerSkillInstall } from "@/cli/agent/skill-installer-prompt";
+
+const outcome = await offerSkillInstall({
+  skillSlug: "Railly/v0-cli",
+  promptMessage:
+    "Install the agent skill for Claude Code / Cursor / MCP-aware agents?",
+});
+
+if (outcome.installed) {
+  // chain next step, skill is live
+} else if (outcome.cancelled) {
+  // user declined; keep going without the skill
+} else if ("error" in outcome) {
+  // surface outcome.error, offer a retry hint
+}
+```
+
+By default the installer runs `npx -y skills add ${skillSlug}`. Override
+the command when you ship a different installer:
+
+```ts
+await offerSkillInstall({
+  skillSlug: "my-company/cursor-skill",
+  command: ["pnpm", "dlx", "cursor-skills", "install", "my-company/cursor-skill"],
+});
+```
+
+## Never throws
+
+The block returns a discriminated union so control flow stays explicit:
+
+```ts
+type SkillInstallerOutcome =
+  | { installed: true }
+  | { installed: false; cancelled: true }
+  | { installed: false; skipped: true }
+  | { installed: false; error: string };
+```
+
+`cancelled` means the user said no (or pressed esc). `skipped` means the
+caller passed `skip: true`. `error` captures installer failures (non-zero
+exit, spawn error) so you can print a retry hint without the block caring
+about your logging style.
+
+## stdio is inherited
+
+The block does not wrap the installer's output. The user sees the raw
+progress, prompts, and errors from the package manager. That's the point:
+the installer is the source of truth for "is this installed now", and the
+user should read it directly instead of a filtered echo.
+
+## Signature
+
+```ts
+export type SkillInstallerPromptOptions = {
+  skillSlug: string;
+  command?: string[];
+  promptMessage?: string;
+  initialValue?: boolean;
+  autoYes?: boolean;
+  skip?: boolean;
+};
+
+export function offerSkillInstall(
+  opts: SkillInstallerPromptOptions,
+): Promise<SkillInstallerOutcome>;
+```
+
+## Composes with `api-key-wizard`
+
+The canonical `init` flow is: wizard → installer → next-steps.
+
+```ts
+import { runApiKeyWizard } from "@/cli/agent/api-key-wizard";
+import { offerSkillInstall } from "@/cli/agent/skill-installer-prompt";
+import { emitNextSteps } from "@/cli/agent/next-steps";
+
+await runApiKeyWizard({ ... });
+const outcome = await offerSkillInstall({ skillSlug: "owner/repo" });
+emitNextSteps(nextStepsFor(outcome), { json: false });
+```
+
+That is exactly how [v0-cli](https://github.com/Railly/v0-cli)'s `v0 init`
+is wired.

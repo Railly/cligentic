@@ -20,13 +20,13 @@ Every CLI I shipped to production reinvented the same primitives: cross-OS clipb
 
 cligentic is the shadcn model applied to CLI infrastructure: a registry of copy-paste TypeScript files, no runtime dependency, no framework lock-in. Install what you need, edit it freely, ship it.
 
-## What's in v0 (16 blocks)
+## What's in v0 (18 blocks)
 
 | Layer | Blocks |
 |---|---|
 | **Platform** (cross-OS) | `detect`, `open-url`, `copy-clipboard`, `notify-os` |
-| **Foundation** (state) | `xdg-paths`, `atomic-write`, `audit-log`, `config`, `session`, `error-map`, `global-flags`, `telemetry`, `banner` |
-| **Agent** (output) | `json-mode`, `next-steps` |
+| **Foundation** (state) | `xdg-paths`, `atomic-write`, `audit-log`, `config`, `session`, `error-map`, `argv`, `global-flags`, `telemetry`, `banner` |
+| **Agent** (output) | `json-mode`, `next-steps`, `doctor`, `api-key-wizard`, `skill-installer-prompt` |
 | **Safety** | `killswitch` |
 
 Browse them all at [cligentic.railly.dev/blocks](https://cligentic.railly.dev/blocks).
@@ -37,6 +37,7 @@ Every block ships in production code before entering the registry:
 
 - **[hapi-cli](https://github.com/crafter-station/hapi-cli)** — moves real money on Hapi Trade brokerage. `killswitch`, `audit-log`, `session`, `atomic-write`, `error-map`.
 - **[sunat-cli](https://github.com/crafter-station/sunat-cli)** — emits SUNAT tax receipts in Peru. `config`, `xdg-paths`, `json-mode`, `next-steps`, `telemetry`.
+- **[v0-cli](https://github.com/Railly/v0-cli)** — wraps the v0 Platform API for agents. `audit-log`, `xdg-paths`, `killswitch`, `error-map`, `doctor`, `next-steps`, `api-key-wizard`, `skill-installer-prompt`.
 
 Blocks copied from those repos, generalized, documented.
 

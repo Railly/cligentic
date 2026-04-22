@@ -192,11 +192,20 @@
   }
 
   .btn-accent .btn-arrow {
-    background: var(--color-bg);
-    color: var(--color-fg);
+    /* Same family as the pill — subtle divider instead of a contrasting
+       cutout, so the copy affordance reads as part of the pill, not a hole
+       punched through it. */
+    background: rgba(0, 0, 0, 0.12);
+    color: var(--color-bg);
     padding: 14px 14px;
     display: grid;
     place-items: center;
+    border-left: 1px solid rgba(0, 0, 0, 0.18);
+    transition: background 150ms ease;
+  }
+
+  .btn-accent:hover .btn-arrow {
+    background: rgba(0, 0, 0, 0.22);
   }
 
   .btn-ghost {

@@ -1,71 +1,102 @@
 # cligentic
 
-**Your CLI is the last thing agents touch.** Copy-paste CLI blocks for the agent era.
-
-Trust ladders, killswitches, `--json` dual mode, audit trails. Battle-tested in CLIs shipping real money and real taxes.
-
-→ [cligentic.railly.dev](https://cligentic.railly.dev)
-
-## Install a block
+Agents need CLIs with safe execution surfaces. cligentic ships the primitives (trust ladders, killswitches, audit logs, `--json` dual mode) as copy-paste TypeScript blocks you own completely.
 
 ```bash
-bunx shadcn@latest add https://cligentic.railly.dev/r/next-steps.json
+bunx shadcn@latest add https://cligentic.railly.dev/r/trust-ladder.json
 ```
-
-That installs `next-steps` and auto-pulls its `registryDependencies` chain (`json-mode` → `detect`). You own every line.
 
 ## Why
 
-Every CLI I shipped to production reinvented the same primitives: cross-OS clipboard, atomic writes, audit logs, killswitches, JSON dual mode for agents. So I extracted them.
+Every CLI I shipped to production reinvented the same primitives: trust gates, atomic writes, killswitches, JSON dual mode, audit trails. cligentic extracts them.
 
-cligentic is the shadcn model applied to CLI infrastructure: a registry of copy-paste TypeScript files, no runtime dependency, no framework lock-in. Install what you need, edit it freely, ship it.
+shadcn model applied to CLI infrastructure. No runtime dependency, no framework lock-in. Install what you need, edit it freely, ship it.
 
-## What's in v0 (20 blocks)
+## Install one block
 
-| Layer | Blocks |
+```bash
+bunx shadcn@latest add https://cligentic.railly.dev/r/trust-ladder.json
+```
+
+This drops into your project:
+
+```
+src/agent/
+  trust-ladder.ts     # TrustLevel enum (T0-T3) + approveGate() + renderPreview()
+  json-mode.ts        # --json flag detection + structured emit helpers
+  error-map.ts        # AppError with human message + actionable hint
+```
+
+`approveGate()` is the core: T0/T1 pass through silently, T2 prompts for confirmation, T3 requires `--yes --confirm <id>`. In `--json` mode or piped input, any T2+ gate throws instead of prompting, so agents get a structured error, not a hanging prompt.
+
+```ts
+await approveGate(ctx, preview, { trust: "T2", yes: flags.yes });
+await placeOrder(order); // only runs if approved
+```
+
+## Available blocks
+
+### Agent
+| Block | Description |
 |---|---|
-| **Platform** (cross-OS) | `detect`, `open-url`, `copy-clipboard`, `notify-os` |
-| **Foundation** (state) | `xdg-paths`, `atomic-write`, `audit-log`, `config`, `session`, `error-map`, `argv`, `global-flags`, `telemetry`, `banner` |
-| **Agent** (output) | `json-mode`, `next-steps`, `doctor`, `api-key-wizard`, `skill-installer-prompt` |
-| **Safety** | `killswitch` |
+| `trust-ladder` | T0-T3 approval gate + preview renderer. The core safety primitive. |
+| `killswitch` | File-based emergency stop. `~/.app/KILLSWITCH` exists → all writes blocked. |
+| `json-mode` | `--json` flag detection + structured stdout/stderr emit helpers. |
+| `next-steps` | Structured `nextSteps` hints on stderr. Tells agents what to run next. |
+| `doctor` | Pre-flight environment check (deps, auth, connectivity). |
+| `api-key-wizard` | Interactive API key setup with validation and secure storage. |
+| `skill-installer-prompt` | Prompt to install Claude Code / Cursor skills from your CLI. |
 
-Browse them all at [cligentic.railly.dev/blocks](https://cligentic.railly.dev/blocks).
+### Foundation
+| Block | Description |
+|---|---|
+| `audit-log` | Append-only JSONL logger for every write operation. |
+| `audit-lifecycle` | Session start/end wrappers around the audit log. |
+| `atomic-write` | Write to temp file, rename to target. No partial writes. |
+| `xdg-paths` | XDG Base Directory paths (`~/.config`, `~/.local/share`, `~/.cache`). |
+| `config` | JSON config file reader/writer on top of `xdg-paths`. |
+| `session` | Session ID generation and tracking. |
+| `error-map` | `AppError` with structured `code`, human message, and actionable hint. |
+| `argv` | Minimal argv parser without a framework dep. |
+| `global-flags` | Standard flags (`--json`, `--yes`, `--dry-run`, `--verbose`). |
+| `telemetry` | Opt-in telemetry with local consent file. |
+| `banner` | CLI startup banner with version + mode. |
 
-## Battle-tested provenance
+### Platform
+| Block | Description |
+|---|---|
+| `detect` | Detect OS, shell, and package manager. |
+| `open-url` | Cross-OS `open`/`xdg-open`/`start` wrapper. |
+| `copy-clipboard` | Cross-OS clipboard write. |
+| `notify-os` | Desktop notification via `osascript` / `notify-send` / `powershell`. |
 
-Every block ships in production code before entering the registry:
+Browse all at [cligentic.railly.dev/blocks](https://cligentic.railly.dev/blocks).
 
-- **[hapi-cli](https://github.com/crafter-station/hapi-cli)** — moves real money on Hapi Trade brokerage. `killswitch`, `audit-log`, `session`, `atomic-write`, `error-map`.
-- **[sunat-cli](https://github.com/crafter-station/sunat-cli)** — emits SUNAT tax receipts in Peru. `config`, `xdg-paths`, `json-mode`, `next-steps`, `telemetry`.
-- **[v0-cli](https://github.com/Railly/v0-cli)** — wraps the v0 Platform API for agents. `audit-log`, `xdg-paths`, `killswitch`, `error-map`, `doctor`, `next-steps`, `api-key-wizard`, `skill-installer-prompt`.
+## Used in production
 
-Blocks copied from those repos, generalized, documented.
-
-## Philosophy
-
-- **Copy-paste, not npm dep.** Zero runtime dependency on cligentic.
-- **Strong primitives, your wrapper.** Each block depends on focused libs (`picocolors`, `node:fs/promises`) — never on a meta-framework.
-- **Agent-first by default.** `--json` mode, structured `next-steps` hints on stderr, `error-map` with actionable hints.
-- **Trust ladder built in.** Dry-run → preview → execute. Killswitches halt everything in one file check.
+- **broker-cli** (private). Agent-first brokerage CLI, moves real money. Uses `killswitch`, `audit-log`, `session`, `atomic-write`, `trust-ladder`.
+- **[v0-cli](https://github.com/Railly/v0-cli)**. Agent-first v0 Platform API wrapper. Uses `audit-log`, `killswitch`, `doctor`, `next-steps`, `api-key-wizard`.
+- **[sunat-cli](https://github.com/crafter-station/sunat-cli)**. Agent-first SUNAT tax automation. Uses `config`, `xdg-paths`, `json-mode`, `next-steps`, `telemetry`.
+- **[webctl](https://github.com/crafter-station/webctl)**. Reverse-engineers websites into agent CLIs. Uses `xdg-paths`, `config`, `session`.
 
 ## Stack
 
-The blocks are pure TypeScript. The registry follows the [shadcn registry schema](https://ui.shadcn.com/docs/registry) — anything that speaks `bunx shadcn add` works.
+Blocks are pure TypeScript. Registry follows the [shadcn registry schema](https://ui.shadcn.com/docs/registry). Anything that speaks `bunx shadcn add` works.
 
-The site is Next.js 16 + Tailwind 4 + custom Shiki theme + GSAP, deployed on Vercel.
+The site is Next.js + Tailwind 4 + Shiki, deployed on Vercel.
 
 ## Local development
 
 ```bash
 bun install
-bun run build                    # builds registry/* into site/public/r/*.json via shadcn build
-cd site && bun run dev           # serves the landing + registry on http://localhost:3000
+bun run build          # builds registry/* into site/public/r/*.json
+cd site && bun run dev # http://localhost:3000
 ```
 
-To author a new block: drop the file in `registry/<layer>/<name>.ts`, add an entry to `registry.json`, run `bun run build`.
+To add a block: drop the file in `registry/<layer>/<name>.ts`, add an entry to `registry.json`, run `bun run build`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
 
 Built by [Railly Hugo](https://railly.dev) at [Crafter Station](https://crafterstation.com).

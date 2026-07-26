@@ -53,4 +53,35 @@ else
   rm -f registry
 fi
 
+# Step 3: emit the raw .ts next to each block JSON.
+#
+# The JSON is the registry contract, but copy-paste should not require a
+# component installer or `jq`. Every built block already carries its full
+# source in files[0].content, so /r/<block>.ts is a projection of what is
+# already there, with no second source of truth.
+#
+#   curl -o src/lib/atomic-write.ts https://cligentic.railly.dev/r/atomic-write.ts
+#
+# Skips registry.json (the manifest, which has no files) and any entry
+# without file content. Uses node so the step has no jq dependency.
+echo "[prebuild] Emitting raw .ts files into site/public/r/"
+node -e '
+const fs = require("node:fs");
+const path = require("node:path");
+const dir = process.argv[1];
+let written = 0;
+for (const entry of fs.readdirSync(dir)) {
+  if (!entry.endsWith(".json") || entry === "registry.json") continue;
+  const parsed = JSON.parse(fs.readFileSync(path.join(dir, entry), "utf8"));
+  const content = parsed.files?.[0]?.content;
+  if (typeof content !== "string" || content.length === 0) {
+    console.warn(`[prebuild]   skipped ${entry}: no file content`);
+    continue;
+  }
+  fs.writeFileSync(path.join(dir, entry.replace(/\.json$/, ".ts")), content);
+  written++;
+}
+console.log(`[prebuild]   wrote ${written} raw .ts files`);
+' "$SITE_DIR/public/r"
+
 echo "[prebuild] Done"

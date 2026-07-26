@@ -73,6 +73,23 @@
       "docs": "## Next steps\n\n```ts\nimport { emit } from './agent/json-mode';\nimport { emitNextSteps } from './agent/next-steps';\n\nprogram.command('list').action(async (opts) => {\n  const items = await fetchItems();\n  emit(items, opts);\n  emitNextSteps([\n    { command: 'myapp show <id>', description: 'see details for one item' },\n    { command: 'myapp export', description: 'export all', optional: true },\n  ], opts);\n});\n```\n\nAgents parse `stderr` line-by-line and filter `{type: 'next-step', ...}`\nobjects to know what to try next. Humans see a formatted block with\narrow bullets.\n\n**Note**: this block auto-pulls `json-mode` via `registryDependencies`,\nso you only need to install `next-steps` and shadcn fetches both."
     },
     {
+      "name": "trust-ladder",
+      "type": "registry:file",
+      "title": "trust-ladder",
+      "description": "Approval gate and structured preview renderer for T2/T3 CLI actions. Handles `--yes`, T3 `--confirm`, JSON/non-TTY refusal, and machine-readable AppError failures.",
+      "registryDependencies": [
+        "https://cligentic.railly.dev/r/json-mode.json",
+        "https://cligentic.railly.dev/r/error-map.json"
+      ],
+      "files": [
+        {
+          "path": "registry/agent/trust-ladder.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/trust-ladder.ts"
+        }
+      ]
+    },
+    {
       "name": "copy-clipboard",
       "type": "registry:file",
       "title": "copy-clipboard",
@@ -140,6 +157,19 @@
           "path": "registry/foundation/audit-log.ts",
           "type": "registry:file",
           "target": "src/cli/foundation/audit-log.ts"
+        }
+      ]
+    },
+    {
+      "name": "audit-lifecycle",
+      "type": "registry:file",
+      "title": "audit-lifecycle",
+      "description": "Two-phase append-only audit lifecycle for dangerous or retryable operations: `beginAudit()` writes pending, then `complete()` or `fail()` appends the final record with the same audit id.",
+      "files": [
+        {
+          "path": "registry/foundation/audit-lifecycle.ts",
+          "type": "registry:file",
+          "target": "src/cli/foundation/audit-lifecycle.ts"
         }
       ]
     },

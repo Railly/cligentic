@@ -14,17 +14,31 @@ shadcn model applied to CLI infrastructure. No runtime dependency, no framework 
 
 ## Install one block
 
+Every block is served as a raw `.ts` file. One curl, no tooling:
+
+```bash
+curl -o src/agent/trust-ladder.ts https://cligentic.railly.dev/r/trust-ladder.ts
+```
+
+Or let the shadcn CLI place the files and resolve dependencies for you:
+
 ```bash
 bunx shadcn@latest add https://cligentic.railly.dev/r/trust-ladder.json
 ```
 
-This drops into your project:
+Either way you end up with:
 
 ```
 src/agent/
   trust-ladder.ts     # TrustLevel enum (T0-T3) + approveGate() + renderPreview()
   json-mode.ts        # --json flag detection + structured emit helpers
   error-map.ts        # AppError with human message + actionable hint
+```
+
+`trust-ladder` needs `json-mode` and `error-map`, because the gate uses JSON-mode detection to know when to throw instead of prompt, and the error type to throw something structured. The CLI pulls those in automatically. With curl, fetch them too, or read the dependency list:
+
+```bash
+curl -s https://cligentic.railly.dev/r/trust-ladder.json | jq -r '.registryDependencies[]?'
 ```
 
 `approveGate()` is the core: T0/T1 pass through silently, T2 prompts for confirmation, T3 requires `--yes --confirm <id>`. In `--json` mode or piped input, any T2+ gate throws instead of prompting, so agents get a structured error, not a hanging prompt.

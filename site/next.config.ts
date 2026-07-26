@@ -51,6 +51,19 @@ const nextConfig: NextConfig = {
           { key: "cache-control", value: "public, max-age=300, s-maxage=300" },
         ],
       },
+      {
+        // Raw block sources. Static servers map the .ts extension to
+        // video/mp2t (MPEG transport stream), which makes browsers try to
+        // download a block instead of displaying it. Override it so the
+        // files read as source in a browser and in curl alike.
+        source: "/r/:block*.ts",
+        headers: [
+          {
+            key: "content-type",
+            value: "text/plain; charset=utf-8",
+          },
+        ],
+      },
     ];
   },
 };

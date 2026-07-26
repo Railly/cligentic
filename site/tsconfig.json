@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "registry-source"
+    "registry-source",
+    "public/r"
   ]
 }

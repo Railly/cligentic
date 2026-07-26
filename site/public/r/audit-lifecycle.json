@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "audit-lifecycle",
+  "title": "audit-lifecycle",
+  "description": "Two-phase append-only audit lifecycle for dangerous or retryable operations: `beginAudit()` writes pending, then `complete()` or `fail()` appends the final record with the same audit id.",
+  "files": [
+    {
+      "path": "registry/foundation/audit-lifecycle.ts",
+      "content": "// cligentic block: audit-lifecycle\n//\n// Two-phase append-only audit records for operations that must survive retries.\n\nimport { appendFileSync, mkdirSync } from \"node:fs\";\nimport { randomUUID } from \"node:crypto\";\nimport { join } from \"node:path\";\n\nexport type AuditLifecycleResult = \"pending\" | \"ok\" | \"error\" | \"blocked\" | \"dry-run\";\n\nexport type AuditLifecycleRecord = {\n  kind: string;\n  command: string;\n  meta?: Record<string, unknown>;\n  tier?: string;\n  profile?: string;\n};\n\nexport type AuditLifecycle = {\n  auditId: string;\n  complete(meta?: Record<string, unknown>): void;\n  fail(meta?: Record<string, unknown>): void;\n  block(meta?: Record<string, unknown>): void;\n  dryRun(meta?: Record<string, unknown>): void;\n};\n\ntype StoredLifecycleRecord = AuditLifecycleRecord & {\n  ts: string;\n  result: AuditLifecycleResult;\n  meta: Record<string, unknown>;\n};\n\nfunction todayFilename(): string {\n  return `${new Date().toISOString().slice(0, 10)}.jsonl`;\n}\n\nexport function beginAudit(\n  auditDir: string,\n  record: AuditLifecycleRecord,\n  opts: { auditId?: string } = {},\n): AuditLifecycle {\n  const auditId = opts.auditId ?? randomUUID();\n  const started = Date.now();\n  const baseMeta = { ...(record.meta ?? {}), audit_id: auditId };\n\n  appendLifecycleRecord(auditDir, record, \"pending\", baseMeta);\n\n  const finish = (result: Exclude<AuditLifecycleResult, \"pending\">, meta = {}) => {\n    appendLifecycleRecord(auditDir, record, result, {\n      ...baseMeta,\n      ...meta,\n      duration_ms: Date.now() - started,\n    });\n  };\n\n  return {\n    auditId,\n    complete: (meta) => finish(\"ok\", meta),\n    fail: (meta) => finish(\"error\", meta),\n    block: (meta) => finish(\"blocked\", meta),\n    dryRun: (meta) => finish(\"dry-run\", meta),\n  };\n}\n\nexport function appendLifecycleRecord(\n  auditDir: string,\n  record: AuditLifecycleRecord,\n  result: AuditLifecycleResult,\n  meta: Record<string, unknown> = {},\n): void {\n  mkdirSync(auditDir, { recursive: true });\n  const file = join(auditDir, todayFilename());\n  const stored: StoredLifecycleRecord = {\n    ts: new Date().toISOString(),\n    ...record,\n    result,\n    meta,\n  };\n  appendFileSync(file, `${JSON.stringify(stored)}\\n`, { mode: 0o600 });\n}\n",
+      "type": "registry:file",
+      "target": "src/cli/foundation/audit-lifecycle.ts"
+    }
+  ],
+  "type": "registry:file"
+}

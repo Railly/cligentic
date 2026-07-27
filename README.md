@@ -59,6 +59,7 @@ await placeOrder(order); // only runs if approved
 | `next-steps` | Structured `nextSteps` hints on stderr. Tells agents what to run next. |
 | `doctor` | Pre-flight environment check (deps, auth, connectivity). |
 | `api-key-wizard` | Interactive API key setup with validation and secure storage. |
+| `prompt-secret` | Read a secret from the TTY without echoing it. No runtime dependency. |
 | `skill-installer-prompt` | Prompt to install Claude Code / Cursor skills from your CLI. |
 
 ### Foundation

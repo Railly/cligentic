@@ -21,7 +21,7 @@
 
 import { spawn } from "node:child_process";
 import { platform } from "node:os";
-import { hasCommand, isCi, isHeadlessLinux, isWsl } from "./detect";
+import { hasCommand, isCi, isHeadlessLinux, isWsl } from "./detect.js";
 
 export type OpenUrlResult = {
   url: string;

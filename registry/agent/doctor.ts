@@ -14,7 +14,7 @@
 //   ]);
 //   renderDoctor(result, opts);
 
-import { type EmitOptions, detectMode, emit } from "./json-mode";
+import { type EmitOptions, detectMode, emit } from "./json-mode.js";
 
 export type DoctorCheck = { name: string; ok: boolean; detail: string };
 

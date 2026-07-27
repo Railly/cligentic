@@ -41,7 +41,7 @@
 //   - json-mode block (chained via registryDependencies — provides detectMode)
 
 import pc from "picocolors";
-import { type EmitOptions, detectMode, shouldColor } from "./json-mode";
+import { type EmitOptions, detectMode, shouldColor } from "./json-mode.js";
 
 export type NextStep = {
   /** The literal command the user/agent should run next. */

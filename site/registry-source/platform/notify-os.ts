@@ -10,7 +10,7 @@
 
 import { execSync } from "node:child_process";
 import { platform } from "node:os";
-import { hasCommand, isCi, isWsl } from "./detect";
+import { hasCommand, isCi, isWsl } from "./detect.js";
 
 export type NotifyResult = {
   sent: boolean;

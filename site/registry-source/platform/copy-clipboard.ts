@@ -13,7 +13,7 @@
 
 import { execSync } from "node:child_process";
 import { platform } from "node:os";
-import { hasCommand, isWsl } from "./detect";
+import { hasCommand, isWsl } from "./detect.js";
 
 export type CopyResult = {
   copied: boolean;

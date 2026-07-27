@@ -4,8 +4,8 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin as defaultStdin, stderr as defaultStderr } from "node:process";
-import { type EmitOptions, detectMode } from "./json-mode";
-import { AppError } from "../foundation/error-map";
+import { type EmitOptions, detectMode } from "./json-mode.js";
+import { AppError } from "../foundation/error-map.js";
 
 export type TrustLevel = "T0" | "T1" | "T2" | "T3";
 

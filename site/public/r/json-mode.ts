@@ -26,7 +26,7 @@ import {
   type OutputMode,
   detectMode,
   shouldColor,
-} from "../platform/detect";
+} from "../platform/detect.js";
 
 // Re-export so consumers can import everything from json-mode
 export { type EmitOptions, type OutputMode as Mode, detectMode, shouldColor };

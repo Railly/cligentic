@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { atomicWriteJson } from "./atomic-write";
+import { atomicWriteJson } from "./atomic-write.js";
 
 export type ConfigFile<T> = {
   defaults?: Partial<T>;

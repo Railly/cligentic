@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { atomicWriteJson } from "./atomic-write";
+import { atomicWriteJson } from "./atomic-write.js";
 
 export type SessionBase = {
   /** ISO 8601 timestamp when the session was created. */

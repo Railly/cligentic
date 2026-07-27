@@ -13,7 +13,7 @@
 //     gradient: ["#FF6B1A", "#DB2627"],
 //   });
 
-import { shouldColor } from "../platform/detect";
+import { shouldColor } from "../platform/detect.js";
 
 export type BannerOptions = {
   name: string;
@@ -40,7 +40,8 @@ export function printBanner(opts: BannerOptions): void {
   }
 
   const lines = toAsciiBlock(name.toUpperCase());
-  const [from, to] = gradient.map(hexToRgb);
+  const from = hexToRgb(gradient[0]);
+  const to = hexToRgb(gradient[1]);
 
   process.stderr.write("\n");
   for (let i = 0; i < lines.length; i++) {
@@ -48,7 +49,7 @@ export function printBanner(opts: BannerOptions): void {
     const r = Math.round(from.r + (to.r - from.r) * t);
     const g = Math.round(from.g + (to.g - from.g) * t);
     const b = Math.round(from.b + (to.b - from.b) * t);
-    process.stderr.write(`  \x1b[38;2;${r};${g};${b}m${lines[i]}\x1b[0m\n`);
+    process.stderr.write(`  \x1b[38;2;${r};${g};${b}m${lines[i] ?? ""}\x1b[0m\n`);
   }
 
   const meta: string[] = [];
@@ -75,12 +76,14 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
  * become spaces. The user can replace this with a figlet font if
  * they want fancier output.
  */
+const BLANK: readonly string[] = ["     ", "     ", "     ", "     ", "     "];
+
 function toAsciiBlock(text: string): string[] {
-  const out = ["", "", "", "", ""];
-  for (const ch of text) {
-    const glyph = GLYPHS[ch] ?? GLYPHS[" "];
+  const out: string[] = ["", "", "", "", ""];
+  for (let i = 0; i < text.length; i++) {
+    const glyph = GLYPHS[text.charAt(i)] ?? BLANK;
     for (let row = 0; row < 5; row++) {
-      out[row] += glyph[row] + " ";
+      out[row] = `${out[row] ?? ""}${glyph[row] ?? "     "} `;
     }
   }
   return out;

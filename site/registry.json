@@ -333,6 +333,19 @@
           "target": "src/cli/agent/skill-installer-prompt.ts"
         }
       ]
+    },
+    {
+      "name": "prompt-secret",
+      "type": "registry:file",
+      "title": "prompt-secret",
+      "description": "Read a secret from the TTY without echoing it. Raw mode, one dot per keystroke, handles backspace and Ctrl-C. Returns null when there is no TTY so the caller can fail with a structured error instead of hanging. No runtime dependency.",
+      "files": [
+        {
+          "path": "registry/agent/prompt-secret.ts",
+          "type": "registry:file",
+          "target": "src/cli/agent/prompt-secret.ts"
+        }
+      ]
     }
   ]
 }

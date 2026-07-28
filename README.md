@@ -84,6 +84,7 @@ await placeOrder(order); // only runs if approved
 | `open-url` | Cross-OS `open`/`xdg-open`/`start` wrapper. |
 | `copy-clipboard` | Cross-OS clipboard write. |
 | `notify-os` | Desktop notification via `osascript` / `notify-send` / `powershell`. |
+| `style` | Styling that respects `NO_COLOR` in one place, plus `visibleWidth` / `padVisible` so tables align once cells carry escapes. |
 
 Browse all at [cligentic.railly.dev/blocks](https://cligentic.railly.dev/blocks).
 

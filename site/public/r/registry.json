@@ -346,6 +346,22 @@
           "target": "src/cli/agent/prompt-secret.ts"
         }
       ]
+    },
+    {
+      "name": "style",
+      "type": "registry:file",
+      "title": "style",
+      "description": "Terminal styling that respects NO_COLOR and non-TTY in one place, plus the width helpers a table needs once cells contain escape codes: visibleWidth, padVisible, truncateVisible. 256-color semantic palette.",
+      "registryDependencies": [
+        "https://cligentic.railly.dev/r/detect.json"
+      ],
+      "files": [
+        {
+          "path": "registry/platform/style.ts",
+          "type": "registry:file",
+          "target": "src/cli/platform/style.ts"
+        }
+      ]
     }
   ]
 }

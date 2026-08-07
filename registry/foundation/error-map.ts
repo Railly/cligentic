@@ -104,6 +104,10 @@ function extractCode(err: unknown): string | null {
     obj.statusCode ??
     (obj.response && typeof obj.response === "object"
       ? (obj.response as Record<string, unknown>).status
+      : undefined) ??
+    (obj.error && typeof obj.error === "object"
+      ? ((obj.error as Record<string, unknown>).code ??
+        (obj.error as Record<string, unknown>).type)
       : undefined);
   if (candidate === undefined || candidate === null) return null;
   return String(candidate);

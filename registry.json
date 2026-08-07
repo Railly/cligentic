@@ -1,4 +1,5 @@
 {
+  "_comment": "Source of truth for cligentic blocks. site/registry.json mirrors this file for the docs site; keep both in sync when adding or removing a block.",
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "cligentic",
   "homepage": "https://cligentic.railly.dev",
